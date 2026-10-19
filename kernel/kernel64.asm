@@ -490,6 +490,11 @@ shell_execute:
     test al,al
     jnz .apps
     mov rsi,shell_input
+    mov rdi,cmd_clever_punish
+    call str_equal
+    test al,al
+    jnz .clever_punish
+    mov rsi,shell_input
     mov rdi,cmd_clever
     call str_equal
     test al,al
@@ -594,6 +599,10 @@ shell_execute:
 .apps:
     mov rsi,txt_apps
     jmp .set
+.clever_punish:
+    call clever_punish_demo
+    mov rsi,txt_punish_recovered
+    jmp .set
 .clever:
     mov rsi,txt_clever
     jmp .set
@@ -669,6 +678,86 @@ shell_execute:
 .set:
     mov rdi,shell_result
     call str_copy
+    ret
+
+; Safe full-screen lock/damage EFFECT SIMULATION. It changes only VGA pixels;
+; it does not write to disks, files, boot sectors, or persistent storage.
+; Press ESC or 3 to leave the simulated lock screen and return to the terminal.
+clever_punish_demo:
+    mov rdi,0
+    mov rsi,0
+    mov rdx,320
+    mov rcx,200
+    mov r8d,4
+    call rect
+    mov rdi,8
+    mov rsi,punish_title
+    mov edx,12
+    mov ecx,15
+    call text
+    mov rdi,8
+    mov rsi,punish_line1
+    mov edx,40
+    mov ecx,14
+    call text
+    mov rdi,8
+    mov rsi,punish_line2
+    mov edx,58
+    mov ecx,12
+    call text
+    mov rdi,8
+    mov rsi,punish_line3
+    mov edx,78
+    mov ecx,15
+    call text
+    ; Draw visible fake corruption blocks in the framebuffer only.
+    mov edi,18
+    mov esi,100
+    mov edx,34
+    mov ecx,12
+    mov r8d,1
+    call rect
+    mov edi,72
+    mov esi,96
+    mov edx,52
+    mov ecx,18
+    mov r8d,12
+    call rect
+    mov edi,145
+    mov esi,104
+    mov edx,46
+    mov ecx,10
+    mov r8d,6
+    call rect
+    mov edi,218
+    mov esi,98
+    mov edx,66
+    mov ecx,16
+    mov r8d,14
+    call rect
+    mov rdi,8
+    mov rsi,punish_recover_hint
+    mov edx,160
+    mov ecx,15
+    call text
+.punish_wait:
+    in al,0x64
+    test al,1
+    jz .punish_wait
+    test al,0x20
+    jnz .punish_consume_mouse
+    in al,0x60
+    test al,0x80
+    jnz .punish_wait
+    cmp al,0x01              ; ESC = recover
+    je .punish_done
+    cmp al,0x04              ; 3 = recover
+    je .punish_done
+    jmp .punish_wait
+.punish_consume_mouse:
+    in al,0x60
+    jmp .punish_wait
+.punish_done:
     ret
 
 ; MiniPygame-style native demo: move a colored player block with arrow keys.
@@ -1055,7 +1144,7 @@ cmd_version db 'version',0
 cmd_hostname db 'hostname',0
 cmd_about db 'about',0
 cmd_apps db 'apps',0
-cmd_clever db 'clever',0
+cmd_clever_punish db 'clever punish 1 2 3',0\ncmd_clever db 'clever',0
 cmd_scan db 'scan',0
 cmd_env db 'env',0
 cmd_memory db 'memory',0
@@ -1072,7 +1161,7 @@ cmd_pip_install db 'pip install ',0
 cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
-txt_help db 'help clear uname pwd ls whoami version hostname about apps clever scan env memory reboot game | python print("text") | pip | echo TEXT',0
+txt_help db 'help clear uname pwd ls whoami version hostname about apps clever | clever punish 1 2 3 | scan | env memory reboot game | python print("text") | pip | echo TEXT',0
 txt_uname db 'NedohackersOS on FASM x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
@@ -1081,7 +1170,7 @@ txt_version db 'NedohackersOS on FASM OS prototype 0.2 | x86_64',0
 txt_hostname db 'nnoobos',0
 txt_about db 'NedohackersOS on FASM: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
 txt_apps db 'Available: Files, Notes, Calculator, Terminal, Clever test.',0
-txt_clever db 'CLEVER-DEMO: inert test signature only.',0
+txt_clever db 'CLEVER-DEMO: inert test signature only.',0\ntxt_punish_recovered db 'Clever demo ended safely. No files were changed.',0\npunish_title db 'CLEVER PUNISH - SIMULATED SYSTEM LOCK',0\npunish_line1 db 'WARNING: simulated system damage detected.',0\npunish_line2 db 'Desktop locked for this demonstration only.',0\npunish_line3 db 'No real files or disk sectors were modified.',0\npunish_recover_hint db 'Press ESC or 3 to unlock and return to terminal.',0
 txt_scan db 'AV: CLEVER-DEMO detected; quarantined in simulation.',0
 txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
 txt_memory db 'Memory map and allocator are not implemented yet.',0
