@@ -111,22 +111,81 @@ kernel_entry:
     mov ecx,15
     call text
 .loop:
-    ; Non-blocking PS/2 keyboard polling.
     in al,0x64
     test al,1
     jz .loop
     in al,0x60
-    cmp al,0x1F
+    test al,0x80
+    jnz .loop
+    cmp byte [shell_active],1
+    je .shell_key
+    cmp al,0x14              ; T = terminal
+    je .terminal
+    cmp al,0x1F              ; S = Start
     je .start
-    cmp al,0x02
+    cmp al,0x02              ; 1 = Files
     je .files
-    cmp al,0x03
+    cmp al,0x03              ; 2 = Notes
     je .notes
-    cmp al,0x04
+    cmp al,0x04              ; 3 = Calculator
     je .calc
-    cmp al,0x0B
+    cmp al,0x0B              ; 0 = desktop redraw
     je .desktop
     jmp .loop
+.terminal:
+    mov byte [shell_active],1
+    call shell_draw
+    jmp .loop
+.shell_key:
+    cmp al,0x14              ; T exits terminal
+    je .terminal_exit
+    cmp al,0x1C              ; Enter
+    je .shell_enter
+    cmp al,0x0E              ; Backspace
+    je .shell_backspace
+    cmp al,0x39              ; Space
+    je .shell_space
+    ; Translate common US keyboard scan codes to lowercase ASCII.
+    movzx ebx,al
+    cmp ebx,57
+    ja .loop
+    mov al,[scan_ascii+rbx]
+    test al,al
+    jz .loop
+    movzx ebx,byte [shell_len]
+    cmp ebx,63
+    jae .loop
+    mov [shell_input+rbx],al
+    inc byte [shell_len]
+    mov byte [shell_input+rbx+1],0
+    call shell_draw
+    jmp .loop
+.shell_space:
+    movzx ebx,byte [shell_len]
+    cmp ebx,63
+    jae .loop
+    mov byte [shell_input+rbx],' '
+    inc byte [shell_len]
+    mov byte [shell_input+rbx+1],0
+    call shell_draw
+    jmp .loop
+.shell_backspace:
+    cmp byte [shell_len],0
+    je .loop
+    dec byte [shell_len]
+    movzx ebx,byte [shell_len]
+    mov byte [shell_input+rbx],0
+    call shell_draw
+    jmp .loop
+.shell_enter:
+    call shell_execute
+    mov byte [shell_len],0
+    mov byte [shell_input],0
+    call shell_draw
+    jmp .loop
+.terminal_exit:
+    mov byte [shell_active],0
+    jmp kernel_entry
 .start:
     mov edi,4
     mov esi,112
@@ -177,6 +236,168 @@ kernel_entry:
 .desktop:
     ; Redraw desktop by rebooting; keyboard shortcut remains responsive.
     jmp kernel_entry
+
+; Minimal Linux-like command line (not a Linux kernel or GNU/Linux environment).
+; T toggles terminal. Supported commands: help, clear, uname, pwd, ls, whoami.
+shell_draw:
+    mov rdi,0
+    mov rsi,0
+    mov rdx,320
+    mov rcx,200
+    mov r8d,0
+    call rect
+    mov rdi,8
+    mov rsi,8
+    mov rdx,terminal_title
+    mov ecx,10
+    call text
+    mov rdi,8
+    mov rsi,35
+    mov rdx,shell_result
+    mov ecx,10
+    call text
+    mov rdi,8
+    mov rsi,160
+    mov rdx,shell_prompt
+    mov ecx,10
+    call text
+    mov rdi,104
+    mov rsi,shell_input
+    mov edx,160
+    mov ecx,15
+    call text
+    mov rdi,8
+    mov rsi,185
+    mov rdx,shell_hint
+    mov ecx,7
+    call text
+    ret
+
+shell_execute:
+    mov rsi,shell_input
+    mov rdi,cmd_help
+    call str_equal
+    test al,al
+    jnz .help
+    mov rsi,shell_input
+    mov rdi,cmd_clear
+    call str_equal
+    test al,al
+    jnz .clear
+    mov rsi,shell_input
+    mov rdi,cmd_uname
+    call str_equal
+    test al,al
+    jnz .uname
+    mov rsi,shell_input
+    mov rdi,cmd_pwd
+    call str_equal
+    test al,al
+    jnz .pwd
+    mov rsi,shell_input
+    mov rdi,cmd_ls
+    call str_equal
+    test al,al
+    jnz .ls
+    mov rsi,shell_input
+    mov rdi,cmd_whoami
+    call str_equal
+    test al,al
+    jnz .whoami
+    mov rsi,shell_input
+    mov rdi,cmd_echo
+    call str_prefix
+    test al,al
+    jnz .echo
+    mov rsi,cmd_unknown
+    mov [shell_result],rsi
+    ; Copy string contents, not its pointer.
+    mov rsi,cmd_unknown
+    mov rdi,shell_result
+    call str_copy
+    ret
+.help:
+    mov rsi,txt_help
+    jmp .set
+.clear:
+    mov rsi,empty_string
+    jmp .set
+.uname:
+    mov rsi,txt_uname
+    jmp .set
+.pwd:
+    mov rsi,txt_pwd
+    jmp .set
+.ls:
+    mov rsi,txt_ls
+    jmp .set
+.whoami:
+    mov rsi,txt_whoami
+    jmp .set
+.echo:
+    ; echo is accepted; print the remainder after "echo ".
+    mov rsi,shell_input
+    add rsi,5
+    mov rdi,shell_result
+    call str_copy
+    ret
+.set:
+    mov rdi,shell_result
+    call str_copy
+    ret
+
+; str_equal: RSI=left, RDI=right, returns AL=1 if equal.
+str_equal:
+    push rbx
+.eq_loop:
+    mov al,[rsi]
+    mov bl,[rdi]
+    cmp al,bl
+    jne .not_equal
+    test al,al
+    jz .equal
+    inc rsi
+    inc rdi
+    jmp .eq_loop
+.equal:
+    mov al,1
+    pop rbx
+    ret
+.not_equal:
+    xor al,al
+    pop rbx
+    ret
+
+; str_prefix: RSI=input, RDI=prefix, returns AL=1 on prefix match.
+str_prefix:
+    push rbx
+.pre_loop:
+    mov al,[rdi]
+    test al,al
+    jz .pre_yes
+    cmp al,[rsi]
+    jne .pre_no
+    inc rsi
+    inc rdi
+    jmp .pre_loop
+.pre_yes:
+    mov al,1
+    pop rbx
+    ret
+.pre_no:
+    xor al,al
+    pop rbx
+    ret
+
+str_copy:
+    push rax
+.copy_loop:
+    lodsb
+    stosb
+    test al,al
+    jnz .copy_loop
+    pop rax
+    ret
 
 ; rect: RDI=x, RSI=y, RDX=width, RCX=height, R8D=color.
 rect:
@@ -327,6 +548,29 @@ serial_write:
     pop rbx
     ret
 
+shell_active db 0
+shell_len db 0
+shell_input times 64 db 0
+shell_result times 96 db 0
+terminal_title db 'NNOOBOS TERMINAL - Linux-like command shell',0
+shell_prompt db 'nnoobos@os:~$ ',0
+shell_hint db 'T: exit terminal | Enter: run command | Backspace: edit',0
+cmd_help db 'help',0
+cmd_clear db 'clear',0
+cmd_uname db 'uname',0
+cmd_pwd db 'pwd',0
+cmd_ls db 'ls',0
+cmd_whoami db 'whoami',0
+cmd_echo db 'echo ',0
+cmd_unknown db 'Unknown command. Type help.',0
+empty_string db 0
+txt_help db 'help clear uname pwd ls whoami echo TEXT',0
+txt_uname db 'Nnoobos x86_64 (experimental OS)',0
+txt_pwd db '/',0
+txt_ls db 'Desktop  Documents  Notes  Downloads',0
+txt_whoami db 'user',0
+; PS/2 set-1 scan-code to lowercase ASCII lookup table.
+scan_ascii db 0,0,'1','2','3','4','5','6','7','8','9','0','-','=',0,0,'q','w','e','r','t','y','u','i','o','p','[',']',0,0,'a','s','d','f','g','h','j','k','l',';',39,'`',0,'\\','z','x','c','v','b','n','m',',','.','/',0,'*',0,' '
 kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
 desktop_title db 'NNOOBOS',0
 brand_label db 'NNOOBOS DESKTOP',0
