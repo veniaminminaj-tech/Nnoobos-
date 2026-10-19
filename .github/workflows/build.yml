@@ -1,4 +1,4 @@
-name: Build Nnoobos x86-64 ISO
+name: Build Nnoobos x86-64 + KolibriOS ISO
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm genisoimage
+          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common 7zip qemu-system-x86
 
       - name: Assemble and validate binaries
         run: |
@@ -32,7 +32,7 @@ jobs:
           test "$(wc -c < build/kernel64.bin)" -gt 0
           test "$(wc -c < build/kernel64.bin)" -le 4608
 
-      - name: Create bootable floppy image
+      - name: Create Nnoobos floppy image
         run: |
           set -eu
           truncate -s 1474560 build/nnoobos.img
@@ -40,23 +40,75 @@ jobs:
           dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
           dd if=build/kernel64.bin of=build/nnoobos.img bs=512 seek=9 conv=notrunc
 
-      - name: Wrap floppy image in BIOS bootable ISO
+      - name: Boot-test Nnoobos in QEMU
         run: |
           set -eu
-          mkdir -p build/iso
-          cp build/nnoobos.img build/iso/nnoobos-floppy.img
-          genisoimage -quiet -V NNOOBOS -b nnoobos-floppy.img -c boot.cat -o build/nnoobos.iso build/iso
-          test -s build/nnoobos.iso
-          file build/nnoobos.iso
-          isoinfo -d -i build/nnoobos.iso | grep -q 'El Torito'
+          set +e
+          timeout 8s qemu-system-x86_64 \
+            -machine pc -accel tcg -cpu qemu64 -m 128M \
+            -drive file=build/nnoobos.img,if=floppy,format=raw \
+            -boot a -display none -monitor none \
+            -serial file:build/qemu-serial.log -no-reboot -no-shutdown
+          qemu_status=$?
+          set -e
+          if [ "$qemu_status" -ne 124 ] && [ "$qemu_status" -ne 0 ]; then
+            echo "QEMU exited unexpectedly with status $qemu_status"
+            cat build/qemu-serial.log || true
+            exit 1
+          fi
+          cat build/qemu-serial.log
+          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-serial.log
+          grep -q 'Long mode: ACTIVE' build/qemu-serial.log
 
-      - name: Upload ISO and raw image
+      - name: Download official KolibriOS floppy image
+        run: |
+          set -eu
+          mkdir -p build/kolibri
+          curl --fail --location --retry 3 --retry-delay 2 \
+            https://builds.kolibrios.org/en_US/latest-img.7z \
+            --output build/kolibri-img.7z
+          7zz x -y build/kolibri-img.7z -obuild/kolibri
+          kolibri_image="$(find build/kolibri -type f -iname '*.img' -print -quit)"
+          test -n "$kolibri_image"
+          cp "$kolibri_image" build/kolibrios.img
+          test -s build/kolibrios.img
+
+      - name: Create BIOS boot menu ISO
+        run: |
+          set -eu
+          mkdir -p build/iso/boot/grub
+          memdisk_path="$(find /usr/lib -type f -name memdisk -print -quit)"
+          test -n "$memdisk_path"
+          cp "$memdisk_path" build/iso/boot/memdisk
+          cp build/nnoobos.img build/iso/nnoobos.img
+          cp build/kolibrios.img build/iso/kolibrios.img
+          cat > build/iso/boot/grub/grub.cfg <<'EOF'
+          set timeout=8
+          set default=0
+
+          menuentry "Nnoobos x86-64 (experimental)" {
+              linux16 /boot/memdisk floppy
+              initrd16 /nnoobos.img
+          }
+
+          menuentry "KolibriOS (official fallback)" {
+              linux16 /boot/memdisk floppy
+              initrd16 /kolibrios.img
+          }
+          EOF
+          grub-mkrescue -o build/nnoobos-kolibri.iso build/iso
+          test -s build/nnoobos-kolibri.iso
+          file build/nnoobos-kolibri.iso
+
+      - name: Upload tested ISO and images
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-first-iso
+          name: nnoobos-kolibri-boot-iso
           path: |
-            build/nnoobos.iso
+            build/nnoobos-kolibri.iso
             build/nnoobos.img
+            build/kolibrios.img
             build/boot.bin
             build/stage2.bin
             build/kernel64.bin
+            build/qemu-serial.log
