@@ -22,7 +22,7 @@ The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. At start
 
 This is an early kernel milestone, not a general-purpose operating system. The desktop is a single-screen kernel prototype, not a complete window manager. Files, Notes and Calculator currently show placeholder windows and do not yet save files or perform calculations.
 
-## Experimental Nnoobos keyboard controls\n\n- At startup, `1` selects the graphical desktop and `2` selects the terminal.\n- Desktop: `S` opens Start; `1` Files; `2` Notes; `3` Calculator; `0` redraws the desktop.\n- Terminal: `help`, `clear`, `uname`, `pwd`, `ls`, `whoami`, `echo TEXT`; `T` exits the terminal.\n\nThese shortcuts control the Nnoobos desktop.\n\n## Executable support status
+## Experimental Nnoobos keyboard controls\n\n- At startup, `1` selects the graphical desktop and `2` selects the terminal.\n- Desktop: `S` opens Start; `1` Files; `2` Notes; `3` Calculator; `0` redraws the desktop.\n- Terminal: `help`, `clear`, `uname`, `pwd`, `ls`, `whoami`, `echo TEXT`, `python`, `python --version`, and the limited `python print("Hello")`; `T` exits the terminal.\n\nThese shortcuts control the Nnoobos desktop.\n\n## Executable support status
 
 Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
 
