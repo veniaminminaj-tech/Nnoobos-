@@ -70,7 +70,7 @@ vga_write:
 nex_validate_header:
     push rbx
     mov eax, 1
-    cmp dword [rsi], 0x3638454E ; "NEX6" little-endian
+    cmp dword [rsi], 0x3658454E ; "NEX6" little-endian
     jne .invalid
     cmp byte [rsi+4], '4'
     jne .invalid
