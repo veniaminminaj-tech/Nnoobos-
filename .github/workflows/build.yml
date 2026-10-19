@@ -1,4 +1,4 @@
-name: Build Nnoobos desktop ISO
+name: Build NedohackersOS on FASM ISO
 
 on:
   push:
@@ -32,21 +32,21 @@ jobs:
           test "$(wc -c < build/kernel64.bin)" -gt 0
           test "$(wc -c < build/kernel64.bin)" -le 8192
 
-      - name: Create Nnoobos floppy image
+      - name: Create NedohackersOS floppy image
         run: |
           set -eu
-          truncate -s 1474560 build/nnoobos.img
-          dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
-          dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
-          dd if=build/kernel64.bin of=build/nnoobos.img bs=512 seek=9 conv=notrunc
+          truncate -s 1474560 build/nedohackersos.img
+          dd if=build/boot.bin of=build/nedohackersos.img conv=notrunc
+          dd if=build/stage2.bin of=build/nedohackersos.img bs=512 seek=1 conv=notrunc
+          dd if=build/kernel64.bin of=build/nedohackersos.img bs=512 seek=9 conv=notrunc
 
-      - name: Boot-test Nnoobos in QEMU
+      - name: Boot-test NedohackersOS in QEMU
         run: |
           set -eu
           set +e
           timeout 8s qemu-system-x86_64 \
             -machine pc -accel tcg -cpu qemu64 -m 128M \
-            -drive file=build/nnoobos.img,if=floppy,format=raw \
+            -drive file=build/nedohackersos.img,if=floppy,format=raw \
             -boot a -display none -monitor none \
             -serial file:build/qemu-serial.log -no-reboot -no-shutdown
           qemu_status=$?
@@ -57,10 +57,10 @@ jobs:
             exit 1
           fi
           cat build/qemu-serial.log
-          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-serial.log
+          grep -q 'NEDOHACKERSOS ON FASM x86-64 KERNEL' build/qemu-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-serial.log
 
-      - name: Create Nnoobos BIOS ISO
+      - name: Create NedohackersOS BIOS ISO
         run: |
           set -eu
           mkdir -p build/iso/boot/grub
@@ -71,7 +71,7 @@ jobs:
           memdisk_path="$(find /usr/lib -type f -name memdisk -print -quit)"
           test -n "$memdisk_path"
           cp "$memdisk_path" build/iso/boot/memdisk
-          cp build/nnoobos.img build/iso/nnoobos.img
+          cp build/nedohackersos.img build/iso/nedohackersos.img
           mkdir -p build/iso/apps build/iso/docs
           cp -R apps/makertools build/iso/apps/makertools
           cp docs/MAKETOOLS.md build/iso/docs/MAKETOOLS.md
@@ -79,14 +79,14 @@ jobs:
           set timeout=3
           set default=0
 
-          menuentry "Nnoobos desktop" {
+          menuentry "NedohackersOS on FASM" {
               linux16 /boot/memdisk floppy
-              initrd16 /nnoobos.img
+              initrd16 /nedohackersos.img
           }
           EOF
-          grub-mkrescue -o build/nnoobos-desktop.iso build/iso
-          test -s build/nnoobos-desktop.iso
-          file build/nnoobos-desktop.iso
+          grub-mkrescue -o build/nedohackersos-on-fasm.iso build/iso
+          test -s build/nedohackersos-on-fasm.iso
+          file build/nedohackersos-on-fasm.iso
 
       - name: Boot-test the complete ISO in QEMU (BIOS)
         run: |
@@ -94,7 +94,7 @@ jobs:
           set +e
           timeout 12s qemu-system-x86_64 \
             -machine pc -accel tcg -cpu qemu64 -m 256M \
-            -cdrom build/nnoobos-desktop.iso -boot d \
+            -cdrom build/nedohackersos-on-fasm.iso -boot d \
             -display none -monitor none \
             -serial file:build/qemu-iso-serial.log -no-reboot -no-shutdown
           qemu_status=$?
@@ -104,16 +104,16 @@ jobs:
             cat build/qemu-iso-serial.log || true
             exit 1
           fi
-          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-iso-serial.log
+          grep -q 'NEDOHACKERSOS ON FASM x86-64 KERNEL' build/qemu-iso-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-iso-serial.log
 
-      - name: Upload tested Nnoobos ISO and images
+      - name: Upload tested NedohackersOS ISO and images
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-desktop-iso
+          name: nedohackersos-on-fasm-iso
           path: |
-            build/nnoobos-desktop.iso
-            build/nnoobos.img
+            build/nedohackersos-on-fasm.iso
+            build/nedohackersos.img
             build/boot.bin
             build/stage2.bin
             build/kernel64.bin
