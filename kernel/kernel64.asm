@@ -570,7 +570,7 @@ txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
 txt_whoami db 'user',0
 ; PS/2 set-1 scan-code to lowercase ASCII lookup table.
-scan_ascii db 0,0,'1','2','3','4','5','6','7','8','9','0','-','=',0,0,'q','w','e','r','t','y','u','i','o','p','[',']',0,0,'a','s','d','f','g','h','j','k','l',';',39,'`',0,'\\','z','x','c','v','b','n','m',',','.','/',0,'*',0,' '
+scan_ascii db 0,0,'1','2','3','4','5','6','7','8','9','0','-','=',0,0,'q','w','e','r','t','y','u','i','o','p','[',']',0,0,'a','s','d','f','g','h','j','k','l',';',39,'`',0,92,'z','x','c','v','b','n','m',',','.','/',0,'*',0,' '
 kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
 desktop_title db 'NNOOBOS',0
 brand_label db 'NNOOBOS DESKTOP',0
