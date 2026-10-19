@@ -113,10 +113,16 @@ kernel_entry:
     mov edx,126
     mov ecx,15
     call text
+    call mouse_init
+    mov dword [mouse_x],160
+    mov dword [mouse_y],100
+    call mouse_cursor_xor
 .loop:
     in al,0x64
     test al,1
     jz .loop
+    test al,0x20
+    jnz .mouse_byte
     in al,0x60
     test al,0x80
     jnz .loop
@@ -134,6 +140,49 @@ kernel_entry:
     je .calc
     cmp al,0x0B              ; 0 = desktop redraw
     je .desktop
+    jmp .loop
+.mouse_byte:
+    in al,0x60
+    mov bl,[mouse_phase]
+    cmp bl,0
+    jne .mouse_packet_next
+    test al,0x08
+    jz .loop
+    mov [mouse_packet],al
+    mov byte [mouse_phase],1
+    jmp .loop
+.mouse_packet_next:
+    cmp bl,1
+    jne .mouse_packet_y
+    mov [mouse_packet+1],al
+    mov byte [mouse_phase],2
+    jmp .loop
+.mouse_packet_y:
+    mov [mouse_packet+2],al
+    mov byte [mouse_phase],0
+    call mouse_cursor_xor
+    movsx eax,byte [mouse_packet+1]
+    add [mouse_x],eax
+    cmp dword [mouse_x],0
+    jge .mouse_x_positive
+    mov dword [mouse_x],0
+.mouse_x_positive:
+    cmp dword [mouse_x],312
+    jle .mouse_y_update
+    mov dword [mouse_x],312
+.mouse_y_update:
+    movsx eax,byte [mouse_packet+2]
+    neg eax
+    add [mouse_y],eax
+    cmp dword [mouse_y],0
+    jge .mouse_y_positive
+    mov dword [mouse_y],0
+.mouse_y_positive:
+    cmp dword [mouse_y],192
+    jle .mouse_cursor_redraw
+    mov dword [mouse_y],192
+.mouse_cursor_redraw:
+    call mouse_cursor_xor
     jmp .loop
 .terminal:
     mov byte [shell_active],1
@@ -671,6 +720,84 @@ boot_choice:
     mov al,2
     ret
 
+; Enable the standard PS/2 auxiliary device (mouse) for polling.
+mouse_init:
+    call .wait_input
+    mov al,0xA8
+    out 0x64,al
+    call .wait_input
+    mov al,0xD4
+    out 0x64,al
+    call .wait_input
+    mov al,0xF4
+    out 0x60,al
+    ; Read the mouse ACK if it is already available; never wait indefinitely.
+    mov ecx,10000
+.ack_wait:
+    in al,0x64
+    test al,1
+    jnz .ack_read
+    loop .ack_wait
+    ret
+.ack_read:
+    in al,0x60
+    ret
+.wait_input:
+    push rcx
+    mov ecx,10000
+.wait_loop:
+    in al,0x64
+    test al,2
+    jz .wait_done
+    loop .wait_loop
+.wait_done:
+    pop rcx
+    ret
+
+; Draw/erase the arrow by XORing its pixels. Calling twice restores the
+; original framebuffer pixels, so cursor movement does not need a backbuffer.
+mouse_cursor_xor:
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push r8
+    push r9
+    xor r9d,r9d
+.cursor_row:
+    movzx ebx,byte [mouse_cursor_shape+r9]
+    xor r8d,r8d
+.cursor_col:
+    test bl,0x80
+    jz .cursor_skip
+    mov eax,[mouse_y]
+    add eax,r9d
+    imul eax,320
+    add eax,[mouse_x]
+    add eax,r8d
+    mov rdi,0xA0000
+    add rdi,rax
+    xor byte [rdi],0x0F
+.cursor_skip:
+    shl bl,1
+    inc r8d
+    cmp r8d,8
+    jne .cursor_col
+    inc r9d
+    cmp r9d,8
+    jne .cursor_row
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+    ret
+
 ; rect: RDI=x, RSI=y, RDX=width, RCX=height, R8D=color.
 rect:
     push rbx
@@ -827,6 +954,12 @@ boot_title db 'NNOOBOS - CHOOSE YOUR SESSION',0
 boot_gui db '1  Graphical desktop (KDE-style)',0
 boot_cli db '2  Command-line terminal',0
 boot_hint db 'Press 1 or 2 on the keyboard to continue',0
+; PS/2 mouse packet state and 320x200 software cursor.
+mouse_x dd 160
+mouse_y dd 100
+mouse_phase db 0
+mouse_packet db 0,0,0
+mouse_cursor_shape db 0x80,0xC0,0xE0,0xF0,0xF8,0xDC,0x8E,0x06
 shell_active db 0
 shell_len db 0
 shell_input rb 64
