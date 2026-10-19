@@ -5,15 +5,18 @@ Nnoobos is an experimental x86 hobby OS written in FASM assembly.
 ## Current prototype
 
 - BIOS boot sector loads a second-stage program from a floppy-style disk image.
-- Text-mode desktop prototype with a taskbar and Start menu.
-- Keyboard shortcuts: **F1** Start menu, **F2** system information, **F3** simulated setup screen, **F4** reboot, **Esc** close/redraw.
-- Uses BIOS services and VGA text mode. This is still a 16-bit real-mode prototype, not yet a 32-bit operating system.
+- Text-mode desktop with title bar, desktop icons, welcome window, and taskbar.
+- Start menu (F1), system information (F2), simulated setup screen (F3), reboot (F4), terminal (F5).
+- Interactive Linux-like command shell: `help`, `clear`, `uname`, `ls`, `echo TEXT`, `desktop`, `exit`, `reboot`.
+- BIOS video and keyboard services; VGA 80x25 text mode.
 
-> **Important:** F3 opens a setup screen inside Nnoobos. It is not the computer's motherboard BIOS/UEFI setup. A normal application cannot replace the motherboard firmware.
+This is a 16-bit real-mode prototype, not a Linux distribution and not yet a 32-bit protected-mode OS. The terminal is a small built-in shell; it does not execute Linux binaries or access a real filesystem yet.
+
+> The F3 setup screen is an OS menu simulation, not the motherboard's BIOS/UEFI firmware settings.
 
 ## Build
 
-Install FASM on Linux and run:
+Install FASM on Linux:
 
 ```sh
 mkdir -p build
@@ -26,24 +29,34 @@ dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
 dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
 ```
 
-The image is a 1.44 MB floppy image for testing in an emulator such as QEMU. Do not write this experimental image to a real disk.
+Run `build/nnoobos.img` in an emulator such as QEMU as a floppy image. Do not write this experimental image to a real disk.
 
-## Keyboard controls
+## Keyboard
 
 | Key | Action |
 | --- | --- |
-| F1 | Show Start menu; press F1 or Esc to close |
-| F2 | System information screen |
-| F3 | Nnoobos setup screen (simulation) |
-| F4 | Reboot via BIOS bootstrap interrupt |
-| Esc | Redraw desktop |
+| F1 | Start menu |
+| F2 | System information |
+| F3 | Setup screen simulation |
+| F4 | Reboot |
+| F5 | Open terminal |
+| Esc | Return/redraw desktop |
 
-## Planned milestones
+## Shell commands
 
-- Load a separate kernel reliably from disk
-- Enter 32-bit protected mode
-- Implement GDT, IDT, and interrupt handlers
-- Add keyboard driver, memory management, and filesystem
-- Explore PE32 executable loading
+- `help` — list commands
+- `clear` — clear terminal
+- `uname` — show OS/architecture
+- `ls` — show placeholder directory list
+- `echo TEXT` — print text
+- `desktop` or `exit` — return to desktop
+- `reboot` — reboot via BIOS
 
-The project is in early development. The desktop and setup screen are simple text-mode prototypes.
+## Roadmap
+
+- Reliable disk loading and a separate 32-bit kernel
+- GDT, IDT, protected mode, interrupt handling
+- Keyboard driver, memory manager, filesystem
+- Real windows/mouse and executable loading
+
+The project is in early development.
