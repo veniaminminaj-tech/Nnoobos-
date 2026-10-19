@@ -42,3 +42,9 @@ NedohackOS does **not** yet run Windows `.exe` files, DOS MZ programs, or comple
 ## Safety and testing
 
 Test only in an emulator with disposable virtual disks. Do not write this experimental image to a real disk. The QEMU smoke test confirms boot progression, not that the OS is a complete desktop or suitable for everyday use.
+
+## NedohackOS ISO assets
+
+The BIOS ISO workflow packages the repository wallpaper images from `background/` and icon source files from `data/common/nedohackos/`. It also creates normalized **512 × 512 pixel PNG** copies in `assets/icons/512/` inside the ISO; originals are preserved in `assets/icons/original/`. After pushing to `nedohackos-redesign`, open [the build workflow](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml) and download the `nedohackos-kolibri-boot-iso` artifact when the run succeeds.
+
+**Important:** 512 × 512 pixels is the image resolution (not “512-bit”). The current experimental kernel is still VGA text-mode only, so these files are bundled in the ISO but are not yet displayed by a graphical desktop.
