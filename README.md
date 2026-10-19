@@ -2,20 +2,23 @@
 
 Nnoobos is an experimental x86 hobby OS written in FASM assembly.
 
-## First ISO build
+## BIOS boot ISO with a boot menu
 
-GitHub Actions now assembles the boot sector, 16-bit stage 2 and experimental 64-bit kernel, creates a 1.44 MB floppy image, then wraps that image in a BIOS El Torito ISO.
+The GitHub Actions workflow assembles Nnoobos, runs a QEMU boot smoke test, downloads the official KolibriOS floppy image, and creates a BIOS ISO with a menu for both systems.
 
-- Workflow: [Build Nnoobos x86-64 ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
-- After a successful run, open the run's **Artifacts** section and download `nnoobos-first-iso`.
-- The ISO uses BIOS floppy-emulation boot media; it is not a UEFI boot ISO.
-- Build success and bootability are not claimed until the GitHub Actions run and an emulator test pass.
+- Workflow: [Build Nnoobos x86-64 + KolibriOS ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
+- After a successful run, download the artifact **nnoobos-kolibri-boot-iso**.
+- Start `nnoobos-kolibri.iso` in VirtualBox with **Enable EFI turned off**.
+- Choose **Nnoobos x86-64 (experimental)** to test Nnoobos, or **KolibriOS (official fallback)** to confirm the virtual machine can boot a known working system.
+- The workflow must pass its QEMU serial-output check before the artifact is considered tested.
+
+KolibriOS is included as a separate boot-menu option; its kernel is not used as the Nnoobos kernel. The two operating systems have different kernel and boot requirements.
 
 ## Current experimental x86-64 boot path
 
 - BIOS boot sector loads the second stage.
 - Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
-- The 64-bit kernel writes a status screen directly to VGA text memory.
+- The 64-bit kernel writes a status screen directly to VGA text memory and emits boot diagnostics on COM1 for automated emulator testing.
 - A first NEX64 executable-header validator is included as groundwork for a future native program loader.
 
 This is an early kernel milestone, not a general-purpose operating system. The current boot path replaces the old text desktop shell. The legacy shell code is not part of this new boot path until a proper 64-bit userspace/window system exists.
