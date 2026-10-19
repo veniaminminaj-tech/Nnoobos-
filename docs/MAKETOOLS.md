@@ -11,6 +11,8 @@ MakeTools is the planned built-in source/document editor for Nnoobos. It will cr
 - `.c` — C source
 - `.html` and `.css` — web files
 - `.json` — JSON data
+- `.exe` — executable file association (planned; Nnoobos-native NEX64 format only until a loader exists)
+- `.nex` — Nnoobos-native executable format
 
 ## Planned interface
 
@@ -20,6 +22,7 @@ MakeTools is the planned built-in source/document editor for Nnoobos. It will cr
 4. Edit text with the keyboard.
 5. Save, Save As, or discard changes.
 6. Show the current filename, extension, and unsaved-change indicator.
+7. Manage file associations, including `.exe` and `.nex`, in the MakeTools association settings.
 
 Templates are starter text only. The extension does not automatically make a language executable: JavaScript and Python runtimes, and a C/C++ compiler, are separate components.
 
@@ -34,5 +37,8 @@ Because of that, a genuinely built-in editor cannot safely save files yet. The n
 3. Build the MakeTools editor UI with a bounded text buffer and filename/extension selection.
 4. Connect MakeTools to filesystem open/save operations.
 5. Add application loading before attempting to run user-created native programs.
+6. Register `.exe` and `.nex` with the future Nnoobos executable loader and show a clear error for unsupported formats.
+
+**Executable compatibility note:** the `.exe` association is intended for Nnoobos-native NEX64 executables once the loader exists. Ordinary Windows `.exe` files (PE/MZ) are not supported by the current kernel and must not be presented as runnable.
 
 Until those foundations exist, this document describes the intended feature; it does not claim that MakeTools is already runnable in the OS.
