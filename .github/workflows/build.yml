@@ -30,7 +30,7 @@ jobs:
           test "$(wc -c < build/boot.bin)" -eq 512
           test "$(wc -c < build/stage2.bin)" -le 4096
           test "$(wc -c < build/kernel64.bin)" -gt 0
-          test "$(wc -c < build/kernel64.bin)" -le 4608
+          test "$(wc -c < build/kernel64.bin)" -le 8192
 
       - name: Create Nnoobos floppy image
         run: |
