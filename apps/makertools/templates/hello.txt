@@ -1,0 +1,2 @@
+New document
+Created from a MakeTools starter template.
