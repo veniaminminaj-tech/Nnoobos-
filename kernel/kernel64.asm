@@ -180,6 +180,9 @@ kernel_entry:
     mov dword [mouse_y],192
 .mouse_cursor_redraw:
     call mouse_cursor_xor
+    test byte [mouse_packet],1
+    jz .loop
+    call mouse_click
     jmp .loop
 .terminal:
     mov byte [shell_active],1
@@ -285,6 +288,119 @@ kernel_entry:
 .desktop:
     ; Redraw desktop by rebooting; keyboard shortcut remains responsive.
     jmp kernel_entry
+
+; Dispatch left-clicks on desktop icons, Start button/menu, and app close area.
+; Current app windows remain prototypes; this adds real mouse interaction.
+mouse_click:
+    mov eax,[mouse_x]
+    mov ebx,[mouse_y]
+    ; Start button on the bottom taskbar.
+    cmp ebx,182
+    jb .check_desktop_icons
+    cmp ebx,198
+    ja .check_desktop_icons
+    cmp eax,5
+    jb .check_desktop_icons
+    cmp eax,41
+    ja .check_desktop_icons
+    jmp .show_start
+.check_desktop_icons:
+    ; Desktop icons: Files, Notes, Calculator.
+    cmp ebx,42
+    jb .check_start_menu
+    cmp ebx,68
+    ja .check_start_menu
+    cmp eax,18
+    jb .check_notes_icon
+    cmp eax,48
+    jbe .open_files
+.check_notes_icon:
+    cmp eax,66
+    jb .check_calc_icon
+    cmp eax,96
+    jbe .open_notes
+.check_calc_icon:
+    cmp eax,114
+    jb .check_start_menu
+    cmp eax,144
+    jbe .open_calc
+.check_start_menu:
+    ; Menu item row: select app by horizontal region.
+    cmp ebx,132
+    jb .check_close
+    cmp ebx,151
+    ja .check_close
+    cmp eax,16
+    jb .check_close
+    cmp eax,44
+    jbe .open_files
+    cmp eax,48
+    jb .check_close
+    cmp eax,82
+    jbe .open_notes
+    cmp eax,88
+    jb .check_close
+    cmp eax,132
+    jbe .open_calc
+.check_close:
+    ; The top-right corner acts as a close target for the app window.
+    cmp ebx,42
+    jb .done
+    cmp ebx,54
+    ja .done
+    cmp eax,230
+    jb .done
+    cmp eax,244
+    ja .done
+    jmp kernel_entry
+.show_start:
+    mov edi,4
+    mov esi,112
+    mov edx,128
+    mov ecx,64
+    mov r8d,7
+    call rect
+    mov edi,8
+    mov esi,116
+    mov edx,120
+    mov ecx,56
+    mov r8d,1
+    call rect
+    mov edi,16
+    mov esi,120
+    mov rsi,start_title
+    mov edx,120
+    mov ecx,15
+    call text
+    mov edi,16
+    mov esi,start_items
+    mov edx,140
+    mov ecx,15
+    call text
+    ret
+.open_files:
+    mov rsi,files_title
+    mov rdi,100
+    mov edx,42
+    mov ecx,15
+    call app_window
+    ret
+.open_notes:
+    mov rsi,notes_title
+    mov rdi,100
+    mov edx,42
+    mov ecx,15
+    call app_window
+    ret
+.open_calc:
+    mov rsi,calc_title
+    mov rdi,100
+    mov edx,42
+    mov ecx,15
+    call app_window
+    ret
+.done:
+    ret
 
 ; Minimal Linux-like command line (not a Linux kernel or GNU/Linux environment).
 ; T toggles terminal. Supported commands: help, clear, uname, pwd, ls, whoami.
