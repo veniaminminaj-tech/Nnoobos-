@@ -348,6 +348,11 @@ shell_execute:
     test al,al
     jnz .pip
     mov rsi,shell_input
+    mov rdi,cmd_game
+    call str_equal
+    test al,al
+    jnz .game
+    mov rsi,shell_input
     mov rdi,cmd_python
     call str_equal
     test al,al
@@ -426,6 +431,10 @@ shell_execute:
 .reboot:
     ; Restart the kernel and show the startup session chooser again.
     jmp kernel_entry
+.game:
+    call game_demo
+    mov rsi,txt_game_exit
+    jmp .set
 .python:
     mov rsi,txt_python
     jmp .set
@@ -482,6 +491,84 @@ shell_execute:
 .set:
     mov rdi,shell_result
     call str_copy
+    ret
+
+; MiniPygame-style native demo: move a colored player block with arrow keys.
+; This is a kernel demo, not Python or the Pygame library.
+game_demo:
+    mov dword [game_x],152
+    mov rdi,0
+    mov rsi,0
+    mov rdx,320
+    mov rcx,200
+    mov r8d,1
+    call rect
+    mov rdi,8
+    mov rsi,game_title
+    mov edx,8
+    mov ecx,15
+    call text
+    mov rdi,8
+    mov rsi,game_instructions
+    mov edx,28
+    mov ecx,14
+    call text
+    mov rdi,0
+    mov rsi,174
+    mov rdx,320
+    mov rcx,26
+    mov r8d,2
+    call rect
+    mov edi,[game_x]
+    mov esi,148
+    mov edx,16
+    mov ecx,16
+    mov r8d,12
+    call rect
+.game_wait:
+    in al,0x64
+    test al,1
+    jz .game_wait
+    in al,0x60
+    test al,0x80
+    jnz .game_wait
+    cmp al,0x01
+    je .game_done
+    cmp al,0x4B
+    je .game_left
+    cmp al,0x4D
+    je .game_right
+    jmp .game_wait
+.game_left:
+    mov edi,[game_x]
+    cmp edi,4
+    jbe .game_wait
+    mov esi,148
+    mov edx,16
+    mov ecx,16
+    mov r8d,1
+    call rect
+    sub dword [game_x],4
+    jmp .game_redraw
+.game_right:
+    mov edi,[game_x]
+    cmp edi,300
+    jae .game_wait
+    mov esi,148
+    mov edx,16
+    mov ecx,16
+    mov r8d,1
+    call rect
+    add dword [game_x],4
+.game_redraw:
+    mov edi,[game_x]
+    mov esi,148
+    mov edx,16
+    mov ecx,16
+    mov r8d,12
+    call rect
+    jmp .game_wait
+.game_done:
     ret
 
 ; str_equal: RSI=left, RDI=right, returns AL=1 if equal.
@@ -757,6 +844,7 @@ cmd_apps db 'apps',0
 cmd_env db 'env',0
 cmd_memory db 'memory',0
 cmd_reboot db 'reboot',0
+cmd_game db 'game',0
 cmd_python db 'python',0
 cmd_python_version db 'python --version',0
 cmd_python_print db 'python print(',0
@@ -768,7 +856,7 @@ cmd_pip_install db 'pip install ',0
 cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
-txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot python python --version python print("text") | pip pip --version pip list pip install NAME echo TEXT',0
+txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot game (MiniPygame demo: arrow keys, Esc exits) | python python --version python print("text") | pip pip --version pip list pip install NAME echo TEXT',0
 txt_uname db 'Nnoobos x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
@@ -779,6 +867,10 @@ txt_about db 'Nnoobos: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
 txt_apps db 'Available: Files, Notes, Calculator (prototype windows).',0
 txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
 txt_memory db 'Memory map and allocator are not implemented yet.',0
+txt_game_exit db 'MiniPygame demo closed.',0
+game_title db 'MINIPYGAME DEMO - NNOOBOS',0
+game_instructions db 'Move the red block with LEFT/RIGHT arrows; ESC exits.',0
+game_x dd 152
 txt_python db 'MiniPython 0.1: use python print("Hello"). Strings only; no CPython yet.',0
 txt_python_version db 'Nnoobos MiniPython 0.1 (limited built-in interpreter)',0
 txt_pip db 'pip is a stub; package installation is not available yet.',0
