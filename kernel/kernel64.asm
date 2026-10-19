@@ -8,6 +8,16 @@ kernel_entry:
     cld
     mov rsp, 0x70000
 
+    ; Serial diagnostics for QEMU/VirtualBox debugging (COM1, 38400 8N1).
+    call serial_init
+    mov rsi, kernel_banner
+    call serial_write
+    mov rsi, serial_line1
+    call serial_write
+    mov rsi, serial_line2
+    call serial_write
+
+
     ; Clear VGA text memory and show kernel status.
     mov rdi, 0xB8000
     mov ax, 0x1F20
@@ -38,6 +48,55 @@ kernel_entry:
 .halt:
     hlt
     jmp .halt
+
+; Initialize COM1 so headless emulator tests can verify that long mode reached the kernel.
+serial_init:
+    mov dx, 0x3F9
+    xor al, al
+    out dx, al
+    mov dx, 0x3FB
+    mov al, 0x80
+    out dx, al
+    mov dx, 0x3F8
+    mov al, 0x03
+    out dx, al
+    mov dx, 0x3F9
+    xor al, al
+    out dx, al
+    mov dx, 0x3FB
+    mov al, 0x03
+    out dx, al
+    mov dx, 0x3FA
+    mov al, 0xC7
+    out dx, al
+    mov dx, 0x3FC
+    mov al, 0x0B
+    out dx, al
+    ret
+
+; RSI = NUL-terminated string; writes it to COM1.
+serial_write:
+    push rbx
+.next:
+    lodsb
+    test al, al
+    jz .done
+    mov bl, al
+.wait:
+    mov dx, 0x3FD
+    in al, dx
+    test al, 0x20
+    jz .wait
+    mov dx, 0x3F8
+    mov al, bl
+    out dx, al
+    jmp .next
+.done:
+    pop rbx
+    ret
+
+serial_line1 db 'Long mode: ACTIVE', 13, 10, 0
+serial_line2 db 'NEX64 header validator present; no executable loader yet.', 13, 10, 0
 
 ; RDI = VGA destination, RSI = NUL-terminated string, AH = text attribute.
 vga_write:
