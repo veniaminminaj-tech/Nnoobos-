@@ -490,6 +490,16 @@ shell_execute:
     test al,al
     jnz .apps
     mov rsi,shell_input
+    mov rdi,cmd_clever
+    call str_equal
+    test al,al
+    jnz .clever
+    mov rsi,shell_input
+    mov rdi,cmd_scan
+    call str_equal
+    test al,al
+    jnz .scan
+    mov rsi,shell_input
     mov rdi,cmd_env
     call str_equal
     test al,al
@@ -583,6 +593,12 @@ shell_execute:
     jmp .set
 .apps:
     mov rsi,txt_apps
+    jmp .set
+.clever:
+    mov rsi,txt_clever
+    jmp .set
+.scan:
+    mov rsi,txt_scan
     jmp .set
 .env:
     mov rsi,txt_env
@@ -1039,6 +1055,8 @@ cmd_version db 'version',0
 cmd_hostname db 'hostname',0
 cmd_about db 'about',0
 cmd_apps db 'apps',0
+cmd_clever db 'clever',0
+cmd_scan db 'scan',0
 cmd_env db 'env',0
 cmd_memory db 'memory',0
 cmd_reboot db 'reboot',0
@@ -1054,7 +1072,7 @@ cmd_pip_install db 'pip install ',0
 cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
-txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot game (MiniPygame demo: arrow keys, Esc exits) | python python --version python print("text") | pip pip --version pip list pip install NAME echo TEXT',0
+txt_help db 'help clear uname pwd ls whoami version hostname about apps clever scan env memory reboot game | python print("text") | pip | echo TEXT',0
 txt_uname db 'NedohackersOS on FASM x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
@@ -1062,7 +1080,9 @@ txt_whoami db 'user',0
 txt_version db 'NedohackersOS on FASM OS prototype 0.2 | x86_64',0
 txt_hostname db 'nnoobos',0
 txt_about db 'NedohackersOS on FASM: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
-txt_apps db 'Available: Files, Notes, Calculator (prototype windows).',0
+txt_apps db 'Available: Files, Notes, Calculator, Terminal, Clever test.',0
+txt_clever db 'CLEVER-DEMO: inert test signature only.',0
+txt_scan db 'AV: CLEVER-DEMO detected; quarantined in simulation.',0
 txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
 txt_memory db 'Memory map and allocator are not implemented yet.',0
 txt_game_exit db 'MiniPygame demo closed.',0
@@ -1084,7 +1104,7 @@ files_label db 'FILES',0
 notes_label db 'NOTES',0
 calc_label db 'CALC',0
 ready_line db 'Welcome to NedohackersOS on FASM!',0
-help_line db 'Press S for Start menu; 1 Files, 2 Notes, 3 Calculator.',0
+help_line db 'S: Start | 1 Files | 2 Notes | 3 Calc | T: Terminal',0
 start_title db 'START MENU',0
 start_items db '1 Files  2 Notes  3 Calculator',0
 files_title db 'File Manager',0
