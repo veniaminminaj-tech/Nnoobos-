@@ -36,7 +36,7 @@ kernel_entry:
     mov edi,10
     mov esi,182
     mov rsi,desktop_title
-    mov edx,4
+    mov edx,182
     mov ecx,4
     call text
     ; Desktop icon tiles
@@ -55,7 +55,7 @@ kernel_entry:
     mov edi,13
     mov esi,70
     mov rsi,files_label
-    mov edx,4
+    mov edx,70
     mov ecx,15
     call text
     mov edi,66
@@ -73,7 +73,7 @@ kernel_entry:
     mov edi,61
     mov esi,70
     mov rsi,notes_label
-    mov edx,4
+    mov edx,70
     mov ecx,15
     call text
     mov edi,114
@@ -91,13 +91,13 @@ kernel_entry:
     mov edi,109
     mov esi,70
     mov rsi,calc_label
-    mov edx,4
+    mov edx,70
     mov ecx,15
     call text
     mov edi,12
     mov esi,9
     mov rsi,brand_label
-    mov edx,15
+    mov edx,9
     mov ecx,15
     call text
     mov rsi,ready_line
@@ -143,13 +143,13 @@ kernel_entry:
     mov edi,16
     mov esi,120
     mov rsi,start_title
-    mov edx,15
+    mov edx,120
     mov ecx,15
     call text
     mov edi,16
     mov esi,140
     mov rsi,start_items
-    mov edx,15
+    mov edx,140
     mov ecx,15
     call text
     jmp .loop
@@ -258,10 +258,8 @@ text:
 
 ; app_window: RSI=title, RDI=x, EDX=y, ECX=color.
 app_window:
+    ; Preserve title pointer, then draw a simple window and title.
     push rsi
-    push rdi
-    push rdx
-    push rcx
     mov edi,96
     mov esi,38
     mov edx,150
@@ -274,13 +272,10 @@ app_window:
     mov ecx,16
     mov r8d,1
     call rect
-    pop rcx
-    pop rdx
-    pop rdi
     pop rsi
     mov edi,104
-    mov esi,42
-    mov edx,15
+    mov edx,42
+    mov ecx,15
     call text
     mov rsi,app_hint
     mov edi,104
