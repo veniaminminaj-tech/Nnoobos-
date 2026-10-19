@@ -18,7 +18,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common 7zip qemu-system-x86
+          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common p7zip-full qemu-system-x86
 
       - name: Assemble and validate binaries
         run: |
@@ -67,7 +67,7 @@ jobs:
           curl --fail --location --retry 3 --retry-delay 2 \
             https://builds.kolibrios.org/en_US/latest-img.7z \
             --output build/kolibri-img.7z
-          7zz x -y build/kolibri-img.7z -obuild/kolibri
+          7z x -y build/kolibri-img.7z -obuild/kolibri
           kolibri_image="$(find build/kolibri -type f -iname '*.img' -print -quit)"
           test -n "$kolibri_image"
           cp "$kolibri_image" build/kolibrios.img
