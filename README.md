@@ -2,80 +2,43 @@
 
 Nnoobos is an experimental x86 hobby OS written in FASM assembly.
 
-## Current prototype
+## First ISO build
 
-- BIOS boot sector loads a second-stage program from a floppy-style disk image.
-- Text-mode desktop with title bar, desktop icons, welcome window, and taskbar.
-- Start menu (F1), system information (F2), simulated setup screen (F3), reboot (F4), terminal (F5).
-- Interactive Linux-like command shell: `help`, `clear`, `uname`, `ls`, `echo TEXT`, `desktop`, `exit`, `reboot`.
-- BIOS video and keyboard services; VGA 80x25 text mode.
+GitHub Actions now assembles the boot sector, 16-bit stage 2 and experimental 64-bit kernel, creates a 1.44 MB floppy image, then wraps that image in a BIOS El Torito ISO.
 
-This is a 16-bit real-mode prototype, not a Linux distribution and not yet a 32-bit protected-mode OS. The terminal is a small built-in shell; it does not execute Linux binaries or access a real filesystem yet.
+- Workflow: [Build Nnoobos x86-64 ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
+- After a successful run, open the run's **Artifacts** section and download `nnoobos-first-iso`.
+- The ISO uses BIOS floppy-emulation boot media; it is not a UEFI boot ISO.
+- Build success and bootability are not claimed until the GitHub Actions run and an emulator test pass.
 
-> The F3 setup screen is an OS menu simulation, not the motherboard's BIOS/UEFI firmware settings.
+## Current experimental x86-64 boot path
 
-## Driver starter files
+- BIOS boot sector loads the second stage.
+- Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
+- The 64-bit kernel writes a status screen directly to VGA text memory.
+- A first NEX64 executable-header validator is included as groundwork for a future native program loader.
 
-- `drivers/keyboard_bios.inc` — BIOS keyboard input routines.
-- `drivers/vga_text.inc` — BIOS VGA text-mode routines.
-- `drivers/disk_bios.inc` — BIOS CHS disk read/reset routines.
+This is an early kernel milestone, not a general-purpose operating system. The current boot path replaces the old text desktop shell. The legacy shell code is not part of this new boot path until a proper 64-bit userspace/window system exists.
 
-These are starter routines and are **not yet linked into the boot image**. The current desktop already calls BIOS services directly.
+## Executable support status
 
-## EXE files and browser support
+Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
 
-Nnoobos does not yet launch Windows `.exe` files or run Firefox. The current 16-bit BIOS prototype lacks the filesystem, process/memory protection, APIs, graphics and networking required for these features. See [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md) for the technical milestones and references. The roadmap is documentation, not implemented support.
+## Current limits
 
-## Python and archive support
-
-Nnoobos does not yet run CPython or WinRAR/RAR tools. See [Python and archive roadmap](docs/PYTHON_AND_ARCHIVES.md) for a realistic implementation plan. Python needs a runtime and OS services; archive support needs a filesystem and an archive implementation. A limited built-in Python-like interpreter could be an intermediate step.
-
-## Build
-
-Install FASM on Linux:
-
-```sh
-mkdir -p build
-fasm main.asm build/boot.bin
-fasm boot/stage2.asm build/stage2.bin
-test "$(wc -c < build/boot.bin)" -eq 512
-test "$(wc -c < build/stage2.bin)" -le 4096
-truncate -s 1474560 build/nnoobos.img
-dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
-dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
-```
-
-Run `build/nnoobos.img` in an emulator such as QEMU as a floppy image. Do not write this experimental image to a real disk.
-
-## Keyboard
-
-| Key | Action |
-| --- | --- |
-| F1 | Start menu |
-| F2 | System information |
-| F3 | Setup screen simulation |
-| F4 | Reboot |
-| F5 | Open terminal |
-| Esc | Return/redraw desktop |
-
-## Shell commands
-
-- `help` — list commands
-- `clear` — clear terminal
-- `uname` — show OS/architecture
-- `ls` — show placeholder directory list
-- `echo TEXT` — print text
-- `desktop` or `exit` — return to desktop
-- `reboot` — reboot via BIOS
+- BIOS/CHS loader with a fixed 9-sector kernel read.
+- Initial page tables identity-map only the first 2 MiB.
+- VGA text mode only; no filesystem, network, GUI, mouse or Firefox.
+- NEX64 validation is a first step, not full executable support.
 
 ## Roadmap
 
-- Reliable disk loading and a separate 32-bit kernel
-- GDT, IDT, protected mode, interrupt handling
-- Keyboard driver, memory manager, filesystem
-- Real windows/mouse and a validated native executable loader
-- Text-mode browser, network stack, then investigate a full browser engine
-- Limited scripting interpreter, then investigate real Python runtime
-- Filesystem and archive tools; evaluate legally distributable RAR support
+- IDT, exception handlers and serial diagnostics
+- Physical and virtual memory management
+- Filesystem and disk file reads
+- Complete NEX64 loader and controlled execution model
+- Process isolation and system calls
+- Separate DOS MZ compatibility research; Windows PE compatibility is a long-term project
+- Network stack and a browser after kernel services exist
 
-The project is in early development.
+Test only in an emulator with disposable disk images. Do not write the experimental image to a real disk.
