@@ -308,6 +308,41 @@ shell_execute:
     test al,al
     jnz .whoami
     mov rsi,shell_input
+    mov rdi,cmd_version
+    call str_equal
+    test al,al
+    jnz .version
+    mov rsi,shell_input
+    mov rdi,cmd_hostname
+    call str_equal
+    test al,al
+    jnz .hostname
+    mov rsi,shell_input
+    mov rdi,cmd_about
+    call str_equal
+    test al,al
+    jnz .about
+    mov rsi,shell_input
+    mov rdi,cmd_apps
+    call str_equal
+    test al,al
+    jnz .apps
+    mov rsi,shell_input
+    mov rdi,cmd_env
+    call str_equal
+    test al,al
+    jnz .env
+    mov rsi,shell_input
+    mov rdi,cmd_memory
+    call str_equal
+    test al,al
+    jnz .memory
+    mov rsi,shell_input
+    mov rdi,cmd_reboot
+    call str_equal
+    test al,al
+    jnz .reboot
+    mov rsi,shell_input
     mov rdi,cmd_echo
     call str_prefix
     test al,al
@@ -335,6 +370,27 @@ shell_execute:
 .whoami:
     mov rsi,txt_whoami
     jmp .set
+.version:
+    mov rsi,txt_version
+    jmp .set
+.hostname:
+    mov rsi,txt_hostname
+    jmp .set
+.about:
+    mov rsi,txt_about
+    jmp .set
+.apps:
+    mov rsi,txt_apps
+    jmp .set
+.env:
+    mov rsi,txt_env
+    jmp .set
+.memory:
+    mov rsi,txt_memory
+    jmp .set
+.reboot:
+    ; Restart the kernel and show the startup session chooser again.
+    jmp kernel_entry
 .echo:
     ; echo is accepted; print the remainder after "echo ".
     mov rsi,shell_input
@@ -613,14 +669,27 @@ cmd_uname db 'uname',0
 cmd_pwd db 'pwd',0
 cmd_ls db 'ls',0
 cmd_whoami db 'whoami',0
+cmd_version db 'version',0
+cmd_hostname db 'hostname',0
+cmd_about db 'about',0
+cmd_apps db 'apps',0
+cmd_env db 'env',0
+cmd_memory db 'memory',0
+cmd_reboot db 'reboot',0
 cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
-txt_help db 'help clear uname pwd ls whoami echo TEXT',0
+txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot echo TEXT',0
 txt_uname db 'Nnoobos x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
 txt_whoami db 'user',0
+txt_version db 'Nnoobos OS prototype 0.2 | x86_64',0
+txt_hostname db 'nnoobos',0
+txt_about db 'Nnoobos: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
+txt_apps db 'Available: Files, Notes, Calculator (prototype windows).',0
+txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
+txt_memory db 'Memory map and allocator are not implemented yet.',0
 ; PS/2 set-1 scan-code to lowercase ASCII lookup table.
 scan_ascii db 0,0,'1','2','3','4','5','6','7','8','9','0','-','=',0,0,'q','w','e','r','t','y','u','i','o','p','[',']',0,0,'a','s','d','f','g','h','j','k','l',';',39,'`',0,92,'z','x','c','v','b','n','m',',','.','/',0,'*',0,' '
 kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
