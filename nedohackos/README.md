@@ -1,28 +1,29 @@
 # NedohackOS — KolibriOS-based edition
 
-NedohackOS is being developed as a derivative of the real KolibriOS source tree, rather than as a separate Nnoobos kernel with a KolibriOS boot-menu entry.
+NedohackOS is being developed as a derivative of KolibriOS, with changes kept in this repository as a reproducible overlay instead of duplicating the entire upstream source tree.
 
-## Source and licensing
+## Build the ISO
 
-- Upstream source: [KolibriOS/kolibrios](https://github.com/KolibriOS/kolibrios)
-- Upstream license: GPL-2.0; preserve upstream copyright and license notices when distributing modified builds.
-- This repository stores a reproducible overlay instead of duplicating the entire upstream source tree.
-- `nedohackos/apply_branding.py` applies the initial branding changes.
-- `nedohackos/integrate_assets.py` stages the NedohackOS artwork into the upstream source checkout for inclusion in the source patch.
+The GitHub Actions workflow [Build NedohackOS bootable ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build-iso.yml) runs on pushes to this branch and can also be started manually with **Actions → Build NedohackOS bootable ISO → Run workflow**.
 
-## Current customizations
+When the workflow succeeds, open its run and download the **NedohackOS-ISO** artifact. It contains `NedohackOS.iso`, the customized KolibriOS floppy image, and the El Torito boot report.
 
-1. The English boot screen identifies the derivative as **NedohackOS based on KolibriOS**, retaining the warranty warning.
-2. The ramdisk-save default points to `nedohackos.img`.
-3. The patched source README identifies the derivative and links back to upstream.
-4. The original wallpaper from the repository's `background/` folder is staged as `data/common/nedohackos/nedohackos-wallpaper.jpg`.
-5. Eight original pixel-style SVG icons are staged under `data/common/nedohackos/icons8/`.
+The ISO has a BIOS/GRUB boot menu branded **NedohackOS based on KolibriOS**. It uses the official prebuilt KolibriOS floppy image as its booted system and copies the NedohackOS wallpaper and eight SVG icons into `/NEDOHACK` on that disk image. The artwork is also available separately in the ISO under `/nedohackos/assets/`.
 
-**Important:** the wallpaper and icons are now included in the generated source patch, but are not yet selected by the running desktop. KolibriOS's native desktop format/configuration must be confirmed before converting the wallpaper or wiring up desktop icons. This branch does not yet claim to produce a verified bootable ISO.
+**Current limitation:** the assets are bundled in the ISO and on the disk image, but the stock KolibriOS desktop does not yet load the wallpaper or SVGs automatically. The boot menu is branded; this does not replace the internal boot screen or kernel of the official prebuilt image with a rebuilt NedohackOS kernel. The workflow performs ISO-format validation and a QEMU BIOS smoke test, but this is not a full interactive desktop acceptance test.
 
-## Validate the overlay
+## Source overlay and licensing
 
-From the repository root, with Git and Python 3 installed:
+- Upstream: [KolibriOS/kolibrios](https://github.com/KolibriOS/kolibrios)
+- The upstream source is GPL-2.0; retain its copyright and license notices when distributing modified builds.
+- `nedohackos/apply_branding.py` applies the initial source branding changes.
+- `nedohackos/integrate_assets.py` stages the artwork into an upstream source checkout for source-patch packaging.
+- `nedohackos/assets/background/nedohackos-wallpaper.jpg` is the wallpaper asset.
+- `nedohackos/assets/icons8/` contains eight original 256×256 SVG icon designs.
+
+## Validate the source overlay locally
+
+With Git and Python 3 installed:
 
 ```bash
 git clone --depth 1 https://github.com/KolibriOS/kolibrios.git upstream/kolibrios
@@ -31,13 +32,6 @@ python3 nedohackos/integrate_assets.py . upstream/kolibrios
 git -C upstream/kolibrios diff --check
 ```
 
-The GitHub Actions workflow checks the pinned upstream commit, applies branding, stages artwork, and uploads a source patch. It does not build an ISO yet. Full KolibriOS builds use the upstream Tup-based toolchain and configuration described in [build.txt](https://github.com/KolibriOS/kolibrios/blob/main/build.txt).
-
-## Next milestones
-
-- Confirm the native wallpaper format and desktop icon resource format.
-- Wire the wallpaper and icons into the default desktop configuration.
-- Build the modified image using the documented KolibriOS build environment.
-- Boot-test the resulting image in QEMU before publishing it.
+The separate `build.yml` workflow validates the pinned upstream source and uploads a source patch. The `build-iso.yml` workflow creates the bootable ISO artifact described above.
 
 The existing `main` branch is unchanged. Work on this migration stays on `nedohackos-kolibri`.
