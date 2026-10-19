@@ -247,28 +247,28 @@ shell_draw:
     mov r8d,0
     call rect
     mov rdi,8
-    mov rsi,8
-    mov rdx,terminal_title
+    mov rsi,terminal_title
+    mov edx,8
     mov ecx,10
     call text
     mov rdi,8
-    mov rsi,35
-    mov rdx,shell_result
+    mov rsi,shell_result
+    mov edx,35
     mov ecx,10
     call text
     mov rdi,8
-    mov rsi,160
-    mov rdx,shell_prompt
+    mov rsi,shell_prompt
+    mov edx,160
     mov ecx,10
     call text
-    mov rdi,104
+    mov rdi,120
     mov rsi,shell_input
     mov edx,160
     mov ecx,15
     call text
     mov rdi,8
-    mov rsi,185
-    mov rdx,shell_hint
+    mov rsi,shell_hint
+    mov edx,182
     mov ecx,7
     call text
     ret
