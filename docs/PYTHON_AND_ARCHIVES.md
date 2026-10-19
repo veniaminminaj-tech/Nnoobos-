@@ -6,13 +6,23 @@ Nnoobos currently boots into a 16-bit x86 BIOS real-mode text interface. That is
 
 ## Python
 
-A practical path is:
+### Current status
 
-1. Add a small Nnoobos shell command named `python` with a deliberately limited interpreter (for example, integer arithmetic and `print`).
-2. Move to a 32-bit protected-mode kernel with a memory manager and filesystem.
-3. Port or embed a real Python implementation only after the OS has process, file, console, and memory services.
+The x86-64 kernel now includes **MiniPython 0.1**, a tiny built-in Python-like command handler. In the terminal:
 
-A command that merely launches host Python would not be Python running inside Nnoobos.
+- `python --version` shows the MiniPython version.
+- `python print("Hello")` displays the quoted string.
+- `python` explains the supported subset.
+
+This is deliberately very limited: it handles a single quoted string passed to `print`; it does not execute general Python programs, variables, arithmetic, imports, scripts, or third-party modules. It is not CPython or MicroPython, and `pip install` still cannot install packages.
+
+### Path to full Python
+
+1. Add filesystem and disk-file reads so scripts can be stored and opened.
+2. Add reliable memory allocation, console I/O, and a program/runtime boundary.
+3. Port a real Python implementation such as MicroPython to Nnoobos; only then can a genuine Python interpreter and package strategy be considered.
+
+A command that launches host Python would not be Python running inside Nnoobos.
 
 ## RAR / WinRAR
 
