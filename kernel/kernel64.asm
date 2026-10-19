@@ -225,10 +225,10 @@ text:
     mov ebx,eax
     xor r9d,r9d
 .glyph_row:
-    mov al,[rbx+r9]
+    mov r11b,[rbx+r9]
     xor r10d,r10d
 .glyph_col:
-    test al,0x80
+    test r11b,0x80
     jz .skip_pixel
     mov eax,r14d
     add eax,r9d
@@ -239,7 +239,7 @@ text:
     add rdi,rax
     mov [rdi],r15b
 .skip_pixel:
-    shl al,1
+    shl r11b,1
     inc r10d
     cmp r10d,8
     jne .glyph_col
