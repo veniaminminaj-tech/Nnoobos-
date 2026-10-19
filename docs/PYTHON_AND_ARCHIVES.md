@@ -24,6 +24,12 @@ This is deliberately very limited: it handles a single quoted string passed to `
 
 A command that launches host Python would not be Python running inside Nnoobos.
 
+## MiniPygame and Pygame compatibility
+
+The terminal command game launches a tiny native kernel graphics demo: it draws a player block and lets the user move it with the left/right arrow keys; Esc exits. This is not a Python API and is not Pygame.
+
+The planned MiniPygame API is documented in docs/MINIPYGAME.md. A real Python game API requires a Python runtime, callable OS graphics/input services, timers, and eventually sound. Full Pygame additionally depends on compatible SDL components and is not currently supported.
+
 ## RAR / WinRAR
 
 WinRAR is a Windows application, not a standalone OS feature. Nnoobos needs a filesystem and archive utility. RAR support also has licensing and format-version constraints; it should be added only through a suitable legally distributable implementation. A first archive milestone should support ZIP, then evaluate a RAR-compatible library/implementation for the target architecture.
