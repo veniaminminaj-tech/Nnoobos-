@@ -105,6 +105,26 @@ jobs:
           test -s build/nnoobos-kolibri.iso
           file build/nnoobos-kolibri.iso
 
+      - name: Boot-test the complete ISO in QEMU (BIOS)
+        run: |
+          set -eu
+          set +e
+          timeout 12s qemu-system-x86_64 \
+            -machine pc -accel tcg -cpu qemu64 -m 256M \
+            -cdrom build/nnoobos-kolibri.iso -boot d \
+            -display none -monitor none \
+            -serial file:build/qemu-iso-serial.log -no-reboot -no-shutdown
+          qemu_status=$?
+          set -e
+          if [ "$qemu_status" -ne 124 ] && [ "$qemu_status" -ne 0 ]; then
+            echo "QEMU ISO boot failed with status $qemu_status"
+            cat build/qemu-iso-serial.log || true
+            exit 1
+          fi
+          cat build/qemu-iso-serial.log
+          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-iso-serial.log
+          grep -q 'Long mode: ACTIVE' build/qemu-iso-serial.log
+
       - name: Upload tested ISO and images
         uses: actions/upload-artifact@v4
         with:
@@ -116,4 +136,4 @@ jobs:
             build/boot.bin
             build/stage2.bin
             build/kernel64.bin
-            build/qemu-serial.log
+            build/qemu-serial.log\n            build/qemu-iso-serial.log
