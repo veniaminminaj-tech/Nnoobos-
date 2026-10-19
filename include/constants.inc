@@ -1,4 +1,4 @@
-OS_NAME            = 'Nnoobos'
+OS_NAME            = 'NedohackersOS on FASM'
 SECTOR_SIZE        = 512
 BOOT_ORIGIN        = 0x7C00
 BOOT_SIGNATURE     = 0xAA55
