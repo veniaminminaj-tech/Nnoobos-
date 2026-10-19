@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "status": "planned",
+  "associations": [
+    {
+      "extension": ".txt",
+      "handler": "makertools.text-editor",
+      "description": "Plain text document"
+    },
+    {
+      "extension": ".js",
+      "handler": "makertools.source-editor",
+      "language": "javascript",
+      "description": "JavaScript source"
+    },
+    {
+      "extension": ".py",
+      "handler": "makertools.source-editor",
+      "language": "python",
+      "description": "Python source"
+    },
+    {
+      "extension": ".cpp",
+      "handler": "makertools.source-editor",
+      "language": "cpp",
+      "description": "C++ source"
+    },
+    {
+      "extension": ".c++",
+      "handler": "makertools.source-editor",
+      "language": "cpp",
+      "description": "C++ source"
+    },
+    {
+      "extension": ".exe",
+      "handler": "nnoobos.executable-loader",
+      "format": "NEX64",
+      "description": "Nnoobos native executable (loader not implemented yet)",
+      "windows_pe_supported": false
+    },
+    {
+      "extension": ".nex",
+      "handler": "nnoobos.executable-loader",
+      "format": "NEX64",
+      "description": "Nnoobos native executable (loader not implemented yet)",
+      "windows_pe_supported": false
+    }
+  ]
+}
