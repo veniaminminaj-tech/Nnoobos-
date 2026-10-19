@@ -550,8 +550,8 @@ serial_write:
 
 shell_active db 0
 shell_len db 0
-shell_input times 64 db 0
-shell_result times 96 db 0
+shell_input rb 64
+shell_result rb 96
 terminal_title db 'NNOOBOS TERMINAL - Linux-like command shell',0
 shell_prompt db 'nnoobos@os:~$ ',0
 shell_hint db 'T: exit terminal | Enter: run command | Backspace: edit',0
