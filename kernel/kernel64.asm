@@ -490,6 +490,11 @@ shell_execute:
     test al,al
     jnz .apps
     mov rsi,shell_input
+    mov rdi,cmd_clever_punish_3
+    call str_equal
+    test al,al
+    jnz .clever_punish_3
+    mov rsi,shell_input
     mov rdi,cmd_clever_punish
     call str_equal
     test al,al
@@ -598,6 +603,10 @@ shell_execute:
     jmp .set
 .apps:
     mov rsi,txt_apps
+    jmp .set
+.clever_punish_3:
+    call clever_bsod_demo
+    mov rsi,txt_bsod_recovered
     jmp .set
 .clever_punish:
     call clever_punish_demo
@@ -758,6 +767,60 @@ clever_punish_demo:
     in al,0x60
     jmp .punish_wait
 .punish_done:
+    ret
+
+; Reversible black-screen-of-death visual simulation, framebuffer only.
+; ESC or 3 returns to the terminal; no disk or files are modified.
+clever_bsod_demo:
+    mov rdi,0
+    mov rsi,0
+    mov rdx,320
+    mov rcx,200
+    mov r8d,0
+    call rect
+    mov rdi,8
+    mov rsi,bsod_title
+    mov edx,18
+    mov ecx,15
+    call text
+    mov rdi,8
+    mov rsi,bsod_line1
+    mov edx,48
+    mov ecx,12
+    call text
+    mov rdi,8
+    mov rsi,bsod_line2
+    mov edx,68
+    mov ecx,7
+    call text
+    mov rdi,8
+    mov rsi,bsod_line3
+    mov edx,88
+    mov ecx,7
+    call text
+    mov rdi,8
+    mov rsi,bsod_hint
+    mov edx,164
+    mov ecx,10
+    call text
+.bsod_wait:
+    in al,0x64
+    test al,1
+    jz .bsod_wait
+    test al,0x20
+    jnz .bsod_mouse
+    in al,0x60
+    test al,0x80
+    jnz .bsod_wait
+    cmp al,0x01
+    je .bsod_done
+    cmp al,0x04
+    je .bsod_done
+    jmp .bsod_wait
+.bsod_mouse:
+    in al,0x60
+    jmp .bsod_wait
+.bsod_done:
     ret
 
 ; MiniPygame-style native demo: move a colored player block with arrow keys.
@@ -1144,7 +1207,9 @@ cmd_version db 'version',0
 cmd_hostname db 'hostname',0
 cmd_about db 'about',0
 cmd_apps db 'apps',0
-cmd_clever_punish db 'clever punish 1 2 3',0\ncmd_clever db 'clever',0
+cmd_clever_punish_3 db 'clever punish 3',0
+cmd_clever_punish db 'clever punish 1 2 3',0
+cmd_clever db 'clever',0
 cmd_scan db 'scan',0
 cmd_env db 'env',0
 cmd_memory db 'memory',0
@@ -1161,7 +1226,7 @@ cmd_pip_install db 'pip install ',0
 cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
-txt_help db 'help clear uname pwd ls whoami version hostname about apps clever | clever punish 1 2 3 | scan | env memory reboot game | python print("text") | pip | echo TEXT',0
+txt_help db 'help clear uname pwd ls whoami version hostname about apps clever | clever punish 3 | clever punish 1 2 3 | scan | env memory reboot game | python print("text") | pip | echo TEXT',0
 txt_uname db 'NedohackersOS on FASM x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
@@ -1170,7 +1235,19 @@ txt_version db 'NedohackersOS on FASM OS prototype 0.2 | x86_64',0
 txt_hostname db 'nnoobos',0
 txt_about db 'NedohackersOS on FASM: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
 txt_apps db 'Available: Files, Notes, Calculator, Terminal, Clever test.',0
-txt_clever db 'CLEVER-DEMO: inert test signature only.',0\ntxt_punish_recovered db 'Clever demo ended safely. No files were changed.',0\npunish_title db 'CLEVER PUNISH - SIMULATED SYSTEM LOCK',0\npunish_line1 db 'WARNING: simulated system damage detected.',0\npunish_line2 db 'Desktop locked for this demonstration only.',0\npunish_line3 db 'No real files or disk sectors were modified.',0\npunish_recover_hint db 'Press ESC or 3 to unlock and return to terminal.',0
+txt_clever db 'CLEVER-DEMO: inert test signature only.',0
+txt_punish_recovered db 'Clever demo ended safely. No files were changed.',0
+txt_bsod_recovered db 'Black screen demo closed safely. No files changed.',0
+bsod_title db 'NEDOHACKERSOS - SYSTEM FAILURE',0
+bsod_line1 db ': (  CLEVER STOP CODE: DEMO_0003',0
+bsod_line2 db 'A simulated fatal error was displayed.',0
+bsod_line3 db 'No real system failure occurred.',0
+bsod_hint db 'Press ESC or 3 to restart the desktop demo.',0
+punish_title db 'CLEVER PUNISH - SIMULATED SYSTEM LOCK',0
+punish_line1 db 'WARNING: simulated system damage detected.',0
+punish_line2 db 'Desktop locked for this demonstration only.',0
+punish_line3 db 'No real files or disk sectors were modified.',0
+punish_recover_hint db 'Press ESC or 3 to unlock and return to terminal.',0
 txt_scan db 'AV: CLEVER-DEMO detected; quarantined in simulation.',0
 txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
 txt_memory db 'Memory map and allocator are not implemented yet.',0
