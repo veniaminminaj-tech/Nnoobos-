@@ -82,6 +82,11 @@ jobs:
           cp "$memdisk_path" build/iso/boot/memdisk
           cp build/nnoobos.img build/iso/nnoobos.img
           cp build/kolibrios.img build/iso/kolibrios.img
+          # Bundle MakeTools source templates and file-association defaults inside the ISO.
+          mkdir -p build/iso/apps
+          cp -R apps/makertools build/iso/apps/makertools
+          mkdir -p build/iso/docs
+          cp docs/MAKETOOLS.md build/iso/docs/MAKETOOLS.md
           cat > build/iso/boot/grub/grub.cfg <<'EOF'
           set timeout=8
           set default=0
