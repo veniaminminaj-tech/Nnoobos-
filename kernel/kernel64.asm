@@ -676,12 +676,14 @@ rect:
     push rbx
     push r12
     push r13
-    mov r12d,esi
-    mov r13d,ecx
+    push r14
+    mov r14d,edi            ; Preserve x: RDI is reused by STOSB.
+    mov r12d,esi            ; Current y.
+    mov r13d,ecx            ; Remaining rows.
 .row:
     mov eax,r12d
     imul eax,320
-    add eax,edi
+    add eax,r14d
     mov ebx,eax
     mov eax,r8d
     mov ecx,edx
@@ -691,6 +693,7 @@ rect:
     inc r12d
     dec r13d
     jnz .row
+    pop r14
     pop r13
     pop r12
     pop rbx
