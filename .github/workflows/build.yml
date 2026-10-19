@@ -18,7 +18,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common mtools p7zip-full qemu-system-x86
+          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common mtools qemu-system-x86
 
       - name: Assemble and validate binaries
         run: |
@@ -60,20 +60,7 @@ jobs:
           grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-serial.log
 
-      - name: Download official KolibriOS floppy image
-        run: |
-          set -eu
-          mkdir -p build/kolibri
-          curl --fail --location --retry 3 --retry-delay 2 \
-            https://builds.kolibrios.org/en_US/latest-img.7z \
-            --output build/kolibri-img.7z
-          7z x -y build/kolibri-img.7z -obuild/kolibri
-          kolibri_image="$(find build/kolibri -type f -iname '*.img' -print -quit)"
-          test -n "$kolibri_image"
-          cp "$kolibri_image" build/kolibrios.img
-          test -s build/kolibrios.img
-
-      - name: Create BIOS boot menu ISO
+      - name: Create Nnoobos BIOS ISO
         run: |
           set -eu
           mkdir -p build/iso/boot/grub
@@ -85,23 +72,21 @@ jobs:
           test -n "$memdisk_path"
           cp "$memdisk_path" build/iso/boot/memdisk
           cp build/nnoobos.img build/iso/nnoobos.img
-          # Bundle MakeTools source templates and file-association defaults inside the ISO.
-          mkdir -p build/iso/apps
+          mkdir -p build/iso/apps build/iso/docs
           cp -R apps/makertools build/iso/apps/makertools
-          mkdir -p build/iso/docs
           cp docs/MAKETOOLS.md build/iso/docs/MAKETOOLS.md
           cat > build/iso/boot/grub/grub.cfg <<'EOF'
-          set timeout=8
+          set timeout=3
           set default=0
 
-          menuentry "Nnoobos desktop (x86-64 experimental)" {
+          menuentry "Nnoobos desktop" {
               linux16 /boot/memdisk floppy
               initrd16 /nnoobos.img
           }
           EOF
-          grub-mkrescue -o build/nnoobos-kolibri.iso build/iso
-          test -s build/nnoobos-kolibri.iso
-          file build/nnoobos-kolibri.iso
+          grub-mkrescue -o build/nnoobos-desktop.iso build/iso
+          test -s build/nnoobos-desktop.iso
+          file build/nnoobos-desktop.iso
 
       - name: Boot-test the complete ISO in QEMU (BIOS)
         run: |
@@ -109,7 +94,7 @@ jobs:
           set +e
           timeout 12s qemu-system-x86_64 \
             -machine pc -accel tcg -cpu qemu64 -m 256M \
-            -cdrom build/nnoobos-kolibri.iso -boot d \
+            -cdrom build/nnoobos-desktop.iso -boot d \
             -display none -monitor none \
             -serial file:build/qemu-iso-serial.log -no-reboot -no-shutdown
           qemu_status=$?
@@ -119,15 +104,15 @@ jobs:
             cat build/qemu-iso-serial.log || true
             exit 1
           fi
-          # Nnoobos is the only OS in this ISO and is tested separately above.
-          test -s build/nnoobos-kolibri.iso
+          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-iso-serial.log
+          grep -q 'Long mode: ACTIVE' build/qemu-iso-serial.log
 
-      - name: Upload tested ISO and images
+      - name: Upload tested Nnoobos ISO and images
         uses: actions/upload-artifact@v4
         with:
           name: nnoobos-desktop-iso
           path: |
-            build/nnoobos-kolibri.iso
+            build/nnoobos-desktop.iso
             build/nnoobos.img
             build/boot.bin
             build/stage2.bin
