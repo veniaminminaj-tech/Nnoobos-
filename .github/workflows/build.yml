@@ -25,8 +25,12 @@ jobs:
       - name: Checkout pinned KolibriOS source
         run: |
           set -eu
-          git clone --depth 1 https://github.com/KolibriOS/kolibrios.git upstream/kolibrios
+          git init upstream/kolibrios
+          git -C upstream/kolibrios remote add origin https://github.com/KolibriOS/kolibrios.git
+          git -C upstream/kolibrios fetch --depth 1 origin b6ad17997692b66bc42f6775404824842971e831
+          git -C upstream/kolibrios checkout --detach FETCH_HEAD
           git -C upstream/kolibrios rev-parse HEAD | tee upstream-commit.txt
+          test "$(cat upstream-commit.txt)" = "b6ad17997692b66bc42f6775404824842971e831"
 
       - name: Apply branding overlay
         run: |
