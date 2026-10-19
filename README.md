@@ -1,17 +1,17 @@
-# Nnoobos
+# NedohackersOS on FASM
 
-Nnoobos is an experimental x86 hobby OS written in FASM assembly.
+NedohackersOS on FASM is an experimental x86 hobby OS written in FASM assembly.
 
 ## BIOS boot ISO
 
-The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. At startup, Nnoobos offers a keyboard choice between its graphical desktop and a Linux-like command-line shell. The graphical session is an early native kernel prototype inspired by compact classic desktops: a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
+The ISO boots **NedohackersOS on FASM itself**. KolibriOS is not bundled or launched. At startup, NedohackersOS on FASM offers a keyboard choice between its graphical desktop and a Linux-like command-line shell. The graphical session is an early native kernel prototype inspired by compact classic desktops: a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
 
-- Workflow: [Build Nnoobos desktop ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
-- After a successful run, download the artifact **nnoobos-desktop-iso**.
-- Start `nnoobos-desktop.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), 256–512 MB RAM, and the ISO attached as the optical drive.
+- Workflow: [Build NedohackersOS on FASM desktop ISO](https://github.com/veniaminminaj-tech/NedohackersOS on FASM-/actions/workflows/build.yml)
+- After a successful run, download the artifact **nedohackersos-on-fasm-iso**.
+- Start `nedohackersos-on-fasm.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), 256–512 MB RAM, and the ISO attached as the optical drive.
 - This image is BIOS/Legacy boot only; UEFI mode is not supported.
 - `Shedletsky.jpg` is included as an image resource; it is not yet the desktop wallpaper.
-- Native USB touchscreen/HID and mouse support are not implemented yet. The current desktop is controlled by keyboard.
+- A basic polled PS/2 mouse cursor has been added to the graphical desktop; click-to-open icons and full USB HID support are not implemented yet.
 
 ## Current experimental x86-64 boot path
 
@@ -22,7 +22,7 @@ The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. At start
 
 This is an early kernel milestone, not a general-purpose operating system. The desktop is a single-screen kernel prototype, not a complete window manager. Files, Notes and Calculator currently show placeholder windows and do not yet save files or perform calculations.
 
-## Experimental Nnoobos keyboard controls
+## Experimental NedohackersOS on FASM keyboard controls
 
 - At startup, press 1 for the graphical desktop or 2 for the terminal.
 - Desktop: S opens Start; 1 Files; 2 Notes; 3 Calculator; 0 redraws the desktop.
@@ -33,7 +33,7 @@ MiniPython only handles a single quoted string passed to print; it is not CPytho
 
 ## Executable support status
 
-Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
+NedohackersOS on FASM does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
 
 ## Current limits
 
