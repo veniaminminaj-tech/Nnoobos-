@@ -1,4 +1,4 @@
-name: Build Nnoobos boot sector
+name: Build Nnoobos disk image
 
 on:
   push:
@@ -20,14 +20,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y fasm
 
-      - name: Assemble boot sector
+      - name: Assemble boot sector and desktop
         run: |
           mkdir -p build
           fasm main.asm build/boot.bin
+          fasm boot/stage2.asm build/stage2.bin
           test "$(wc -c < build/boot.bin)" -eq 512
+          test "$(wc -c < build/stage2.bin)" -le 4096
 
-      - name: Upload boot sector
+      - name: Create 1.44 MB floppy image
+        run: |
+          truncate -s 1474560 build/nnoobos.img
+          dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
+          dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-boot-sector
-          path: build/boot.bin
+          name: nnoobos-boot-image
+          path: |
+            build/nnoobos.img
+            build/boot.bin
+            build/stage2.bin
