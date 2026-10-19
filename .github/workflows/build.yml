@@ -1,4 +1,4 @@
-name: Build Nnoobos disk image
+name: Build Nnoobos x86-64 ISO
 
 on:
   push:
@@ -15,30 +15,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install FASM
+      - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm
+          sudo apt-get install -y fasm genisoimage
 
-      - name: Assemble boot sector and desktop shell
+      - name: Assemble and validate binaries
         run: |
+          set -eu
           mkdir -p build
           fasm main.asm build/boot.bin
           fasm boot/stage2.asm build/stage2.bin
+          fasm kernel/kernel64.asm build/kernel64.bin
           test "$(wc -c < build/boot.bin)" -eq 512
           test "$(wc -c < build/stage2.bin)" -le 4096
+          test "$(wc -c < build/kernel64.bin)" -gt 0
+          test "$(wc -c < build/kernel64.bin)" -le 4608
 
-      - name: Create bootable 1.44 MB floppy image
+      - name: Create bootable floppy image
         run: |
+          set -eu
           truncate -s 1474560 build/nnoobos.img
           dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
           dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
+          dd if=build/kernel64.bin of=build/nnoobos.img bs=512 seek=9 conv=notrunc
 
-      - name: Upload build artifacts
+      - name: Wrap floppy image in BIOS bootable ISO
+        run: |
+          set -eu
+          mkdir -p build/iso
+          cp build/nnoobos.img build/iso/nnoobos-floppy.img
+          genisoimage -quiet -V NNOOBOS -b nnoobos-floppy.img -c boot.cat -o build/nnoobos.iso build/iso
+          test -s build/nnoobos.iso
+          file build/nnoobos.iso
+          isoinfo -d -i build/nnoobos.iso | grep -q 'El Torito'
+
+      - name: Upload ISO and raw image
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-boot-image
+          name: nnoobos-first-iso
           path: |
+            build/nnoobos.iso
             build/nnoobos.img
             build/boot.bin
             build/stage2.bin
+            build/kernel64.bin
