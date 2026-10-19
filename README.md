@@ -14,6 +14,18 @@ This is a 16-bit real-mode prototype, not a Linux distribution and not yet a 32-
 
 > The F3 setup screen is an OS menu simulation, not the motherboard's BIOS/UEFI firmware settings.
 
+## Driver starter files
+
+- `drivers/keyboard_bios.inc` — BIOS keyboard input routines.
+- `drivers/vga_text.inc` — BIOS VGA text-mode routines.
+- `drivers/disk_bios.inc` — BIOS CHS disk read/reset routines.
+
+These are starter routines and are **not yet linked into the boot image**. The current desktop already calls BIOS services directly.
+
+## Python and archive support
+
+Nnoobos does not yet run CPython or WinRAR/RAR tools. See [Python and archive roadmap](docs/PYTHON_AND_ARCHIVES.md) for a realistic implementation plan. Python needs a runtime and OS services; archive support needs a filesystem and an archive implementation. A limited built-in Python-like interpreter could be an intermediate step.
+
 ## Build
 
 Install FASM on Linux:
@@ -58,5 +70,7 @@ Run `build/nnoobos.img` in an emulator such as QEMU as a floppy image. Do not wr
 - GDT, IDT, protected mode, interrupt handling
 - Keyboard driver, memory manager, filesystem
 - Real windows/mouse and executable loading
+- Limited scripting interpreter, then investigate real Python runtime
+- Filesystem and archive tools; evaluate legally distributable RAR support
 
 The project is in early development.
