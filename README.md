@@ -53,3 +53,16 @@ NedohackersOS on FASM does **not** yet run Windows `.exe` files, DOS MZ programs
 - Network stack and a browser after kernel services exist
 
 Test only in an emulator with disposable disk images. Do not write the experimental image to a real disk.
+
+
+## NedohackersOS Beta desktop prototype (Python IDE + browser)
+
+A separate desktop preview is available while native kernel services are still being developed. It runs as a regular Python desktop app on Windows and does not replace or modify Windows.
+
+- Start on Windows: double-click `run_beta.bat`, or run `py -3 desktop_beta.py`.
+- Python IDE: edit Python code, press **Run**, and view stdout/errors. Runs in a subprocess with an 8-second timeout.
+- Browser: with the optional `tkinterweb` package installed, the app attempts to show web pages in its own window. Without it, **Go** opens the URL in your system browser.
+- Optional embedded browser dependency: `py -3 -m pip install -r requirements-beta.txt`.
+- Icons: see [assets/icons/README.md](assets/icons/README.md) for the open-source Lucide icon references and license.
+
+**Important:** this is a desktop prototype, not yet a browser or CPython implementation inside the bare-metal kernel. The IDE runs code with your normal user permissions; it is not a security sandbox, so only run code you trust. The desktop app itself does not change system settings or install anything.
