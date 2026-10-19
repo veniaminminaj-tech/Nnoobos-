@@ -1,4 +1,4 @@
-; Nnoobos graphical desktop prototype for BIOS VGA mode 13h (320x200).
+; NedohackersOS on FASM graphical desktop prototype for BIOS VGA mode 13h (320x200).
 ; BIOS font is copied to 0x5000 by stage2. Keyboard shortcuts:
 ; S = Start menu, 1 = Files, 2 = Notes, 3 = Calculator, 0 = Desktop.
 use64
@@ -950,7 +950,7 @@ serial_write:
     pop rbx
     ret
 
-boot_title db 'NNOOBOS - CHOOSE YOUR SESSION',0
+boot_title db 'NEDOHACKERSOS ON FASM - CHOOSE YOUR SESSION',0
 boot_gui db '1  Graphical desktop (KDE-style)',0
 boot_cli db '2  Command-line terminal',0
 boot_hint db 'Press 1 or 2 on the keyboard to continue',0
@@ -964,7 +964,7 @@ shell_active db 0
 shell_len db 0
 shell_input rb 64
 shell_result rb 96
-terminal_title db 'NNOOBOS TERMINAL - Linux-like command shell',0
+terminal_title db 'NEDOHACKERSOS ON FASM TERMINAL - Linux-like command shell',0
 shell_prompt db 'nnoobos@os:~$ ',0
 shell_hint db 'T: exit terminal | Enter: run command | Backspace: edit',0
 cmd_help db 'help',0
@@ -993,35 +993,35 @@ cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
 txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot game (MiniPygame demo: arrow keys, Esc exits) | python python --version python print("text") | pip pip --version pip list pip install NAME echo TEXT',0
-txt_uname db 'Nnoobos x86_64 (experimental OS)',0
+txt_uname db 'NedohackersOS on FASM x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
 txt_whoami db 'user',0
-txt_version db 'Nnoobos OS prototype 0.2 | x86_64',0
+txt_version db 'NedohackersOS on FASM OS prototype 0.2 | x86_64',0
 txt_hostname db 'nnoobos',0
-txt_about db 'Nnoobos: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
+txt_about db 'NedohackersOS on FASM: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
 txt_apps db 'Available: Files, Notes, Calculator (prototype windows).',0
 txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
 txt_memory db 'Memory map and allocator are not implemented yet.',0
 txt_game_exit db 'MiniPygame demo closed.',0
-game_title db 'MINIPYGAME DEMO - NNOOBOS',0
+game_title db 'MINIPYGAME DEMO - NEDOHACKERSOS ON FASM',0
 game_instructions db 'Move the red block with LEFT/RIGHT arrows; ESC exits.',0
 game_x dd 152
 txt_python db 'MiniPython 0.1: use python print("Hello"). Strings only; no CPython yet.',0
-txt_python_version db 'Nnoobos MiniPython 0.1 (limited built-in interpreter)',0
+txt_python_version db 'NedohackersOS on FASM MiniPython 0.1 (limited built-in interpreter)',0
 txt_pip db 'pip is a stub; package installation is not available yet.',0
 txt_pip_version db 'pip compatibility stub 0.1 (Python runtime unavailable)',0
 txt_pip_list db 'No Python packages: Python runtime and package database are not implemented.',0
-txt_pip_install db 'Cannot install packages yet: Nnoobos needs Python, filesystem, and network support.',0
+txt_pip_install db 'Cannot install packages yet: NedohackersOS on FASM needs Python, filesystem, and network support.',0
 ; PS/2 set-1 scan-code to lowercase ASCII lookup table.
 scan_ascii db 0,0,'1','2','3','4','5','6','7','8','9','0','-','=',0,0,'q','w','e','r','t','y','u','i','o','p','[',']',0,0,'a','s','d','f','g','h','j','k','l',';',39,'`',0,92,'z','x','c','v','b','n','m',',','.','/',0,'*',0,' '
-kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
-desktop_title db 'NNOOBOS',0
-brand_label db 'NNOOBOS DESKTOP',0
+kernel_banner db 'NEDOHACKERSOS ON FASM x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
+desktop_title db 'NEDOHACKERSOS ON FASM',0
+brand_label db 'NEDOHACKERSOS ON FASM DESKTOP',0
 files_label db 'FILES',0
 notes_label db 'NOTES',0
 calc_label db 'CALC',0
-ready_line db 'Welcome to Nnoobos!',0
+ready_line db 'Welcome to NedohackersOS on FASM!',0
 help_line db 'Press S for Start menu; 1 Files, 2 Notes, 3 Calculator.',0
 start_title db 'START MENU',0
 start_items db '1 Files  2 Notes  3 Calculator',0
