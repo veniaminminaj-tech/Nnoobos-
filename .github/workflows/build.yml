@@ -39,6 +39,18 @@ jobs:
           grep -q 'NedohackOS based on KolibriOS' upstream/kolibrios/kernel/trunk/boot/bootstr-en_US.inc
           grep -q 'path=/usbhd0/1/nedohackos.img' upstream/kolibrios/data/common/settings/app.ini
           grep -q '^# NedohackOS (based on KolibriOS)$' upstream/kolibrios/README.md
+
+      - name: Stage NedohackOS wallpaper and pixel icons
+        run: |
+          set -eu
+          python3 nedohackos/integrate_assets.py "$GITHUB_WORKSPACE" upstream/kolibrios
+          test -s upstream/kolibrios/data/common/nedohackos/nedohackos-wallpaper.jpg
+          test -s upstream/kolibrios/data/common/nedohackos/icons8/computer.svg
+          test -s upstream/kolibrios/data/common/nedohackos/README.txt
+
+      - name: Validate and package source patch
+        run: |
+          set -eu
           git -C upstream/kolibrios diff --check
           git -C upstream/kolibrios diff --binary > nedohackos-source-patch.patch
           test -s nedohackos-source-patch.patch
