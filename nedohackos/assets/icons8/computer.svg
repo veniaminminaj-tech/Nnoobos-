@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="1" width="14" height="10" fill="#20283b"/><rect x="2" y="2" width="12" height="8" fill="#79d7ff"/><rect x="3" y="3" width="4" height="2" fill="#f7f0a4"/><rect x="8" y="4" width="4" height="1" fill="#ffffff"/><rect x="8" y="6" width="3" height="1" fill="#ffffff"/><rect x="6" y="11" width="4" height="2" fill="#aab4c8"/><rect x="4" y="13" width="8" height="2" fill="#20283b"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" shape-rendering="crispEdges">
+<title>NedohackOS Pixel Computer</title>
+<defs><linearGradient id="screen" x2="0" y2="1"><stop stop-color="#7de8ff"/><stop offset="1" stop-color="#2587e8"/></linearGradient></defs>
+<rect x="28" y="34" width="200" height="142" rx="8" fill="#17243b"/><rect x="38" y="44" width="180" height="122" fill="#526a89"/><rect x="46" y="52" width="164" height="106" fill="url(#screen)"/>
+<rect x="56" y="64" width="52" height="8" fill="#eaffff"/><rect x="56" y="80" width="92" height="5" fill="#baf7ff"/><rect x="56" y="91" width="72" height="5" fill="#baf7ff"/><rect x="56" y="112" width="22" height="22" fill="#fff3b0"/><rect x="84" y="112" width="22" height="22" fill="#ffcb6b"/><rect x="112" y="112" width="22" height="22" fill="#f08c74"/>
+<rect x="112" y="176" width="32" height="24" fill="#7286a3"/><path d="M88 202h80l16 14H72z" fill="#aabbd0"/><rect x="24" y="216" width="208" height="12" rx="3" fill="#d6e3f1"/><rect x="30" y="220" width="196" height="4" fill="#8296b1"/><rect x="102" y="188" width="52" height="5" fill="#dce8f6"/>
+</svg>
