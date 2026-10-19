@@ -1,4 +1,4 @@
-; Nnoobos stage 2: BIOS setup, load kernel, enter x86-64 long mode.
+; NedohackersOS on FASM stage 2: BIOS setup, load kernel, enter x86-64 long mode.
 use16
 org 0x8000
 stage2_entry:
@@ -126,4 +126,4 @@ gdt_pointer:
     dw gdt_end-gdt_start-1
     dd gdt_start
 boot_drive db 0
-disk_error_message db 'Nnoobos: kernel disk read error',0
+disk_error_message db 'NedohackersOS on FASM: kernel disk read error',0
