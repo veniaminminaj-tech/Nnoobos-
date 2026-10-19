@@ -1,0 +1,11 @@
+# Generated binaries and build output
+/build/
+/*.bin
+/*.img
+/*.iso
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
