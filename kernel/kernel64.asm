@@ -10,9 +10,6 @@ kernel_entry:
     call serial_init
     mov rsi,kernel_banner
     call serial_write
-    call boot_choice
-    cmp al,2
-    je .terminal
     mov rdi,0xA0000
     mov ecx,64000
     mov al,1
@@ -673,53 +670,6 @@ str_copy:
     pop rax
     ret
 
-; Startup chooser: 1 launches the graphical desktop, 2 opens terminal.
-boot_choice:
-    mov rdi,0
-    mov rsi,0
-    mov rdx,320
-    mov rcx,200
-    mov r8d,1
-    call rect
-    mov rdi,24
-    mov rsi,boot_title
-    mov edx,30
-    mov ecx,15
-    call text
-    mov rdi,24
-    mov rsi,boot_gui
-    mov edx,70
-    mov ecx,14
-    call text
-    mov rdi,24
-    mov rsi,boot_cli
-    mov edx,92
-    mov ecx,14
-    call text
-    mov rdi,24
-    mov rsi,boot_hint
-    mov edx,140
-    mov ecx,7
-    call text
-.wait:
-    in al,0x64
-    test al,1
-    jz .wait
-    in al,0x60
-    test al,0x80
-    jnz .wait
-    cmp al,0x02
-    je .gui
-    cmp al,0x03
-    je .cli
-    jmp .wait
-.gui:
-    mov al,1
-    ret
-.cli:
-    mov al,2
-    ret
-
 ; Enable the standard PS/2 auxiliary device (mouse) for polling.
 mouse_init:
     call .wait_input
@@ -950,10 +900,6 @@ serial_write:
     pop rbx
     ret
 
-boot_title db 'NEDOHACKERSOS ON FASM - CHOOSE YOUR SESSION',0
-boot_gui db '1  Graphical desktop (KDE-style)',0
-boot_cli db '2  Command-line terminal',0
-boot_hint db 'Press 1 or 2 on the keyboard to continue',0
 ; PS/2 mouse packet state and 320x200 software cursor.
 mouse_x dd 160
 mouse_y dd 100
