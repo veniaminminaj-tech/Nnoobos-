@@ -110,6 +110,14 @@ kernel_entry:
     mov edx,126
     mov ecx,15
     call text
+    cmp byte [safe_mode],1
+    jne .desktop_normal
+    mov rsi,safe_mode_label
+    mov edi,15
+    mov edx,146
+    mov ecx,14
+    call text
+.desktop_normal:
     call mouse_init
     mov dword [mouse_x],160
     mov dword [mouse_y],100
@@ -769,8 +777,9 @@ clever_punish_demo:
 .punish_done:
     ret
 
-; Reversible black-screen-of-death visual simulation, framebuffer only.
-; ESC or 3 returns to the terminal; no disk or files are modified.
+; Black-screen-of-death visual simulation, framebuffer only.
+; Only F8 enters the clearly marked safe-mode desktop. Rebooting the VM also
+; resets the demo. No disk, files, boot sectors, or host OS are modified.
 clever_bsod_demo:
     mov rdi,0
     mov rsi,0
@@ -812,16 +821,14 @@ clever_bsod_demo:
     in al,0x60
     test al,0x80
     jnz .bsod_wait
-    cmp al,0x01
-    je .bsod_done
-    cmp al,0x04
-    je .bsod_done
-    jmp .bsod_wait
+    cmp al,0x42              ; F8 = enter safe mode
+    jne .bsod_wait
+    mov byte [safe_mode],1
+    mov byte [shell_active],0
+    jmp kernel_entry         ; Safe-mode recovery path; no normal-key exit.
 .bsod_mouse:
     in al,0x60
     jmp .bsod_wait
-.bsod_done:
-    ret
 
 ; MiniPygame-style native demo: move a colored player block with arrow keys.
 ; This is a kernel demo, not Python or the Pygame library.
@@ -1191,6 +1198,7 @@ mouse_phase db 0
 mouse_packet db 0,0,0
 mouse_cursor_shape db 0x80,0xC0,0xE0,0xF0,0xF8,0xDC,0x8E,0x06
 shell_active db 0
+safe_mode db 0
 shell_len db 0
 shell_input rb 64
 shell_result rb 96
@@ -1242,7 +1250,8 @@ bsod_title db 'NEDOHACKERSOS - SYSTEM FAILURE',0
 bsod_line1 db ': (  CLEVER STOP CODE: DEMO_0003',0
 bsod_line2 db 'A simulated fatal error was displayed.',0
 bsod_line3 db 'No real system failure occurred.',0
-bsod_hint db 'Press ESC or 3 to restart the desktop demo.',0
+bsod_hint db 'RECOVERY: press F8 to enter SAFE MODE.',0
+safe_mode_label db 'SAFE MODE: recovery desktop active',0
 punish_title db 'CLEVER PUNISH - SIMULATED SYSTEM LOCK',0
 punish_line1 db 'WARNING: simulated system damage detected.',0
 punish_line2 db 'Desktop locked for this demonstration only.',0
