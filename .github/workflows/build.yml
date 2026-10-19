@@ -40,7 +40,7 @@ jobs:
           dd if=build/stage2.bin of=build/nedohackos.img bs=512 seek=1 conv=notrunc
           dd if=build/kernel64.bin of=build/nedohackos.img bs=512 seek=9 conv=notrunc
 
-      - name: Boot-test Nnoobos in QEMU
+      - name: Boot-test NedohackOS in QEMU
         run: |
           set -eu
           set +e
@@ -80,7 +80,7 @@ jobs:
           memdisk_path="$(find /usr/lib -type f -name memdisk -print -quit)"
           test -n "$memdisk_path"
           cp "$memdisk_path" build/iso/boot/memdisk
-          cp build/nedohackos.img build/iso/nnoobos.img
+          cp build/nedohackos.img build/iso/nedohackos.img
           cp build/kolibrios.img build/iso/kolibrios.img
           # Bundle MakeTools source templates and file-association defaults inside the ISO.
           mkdir -p build/iso/apps
@@ -93,7 +93,7 @@ jobs:
 
           menuentry "NedohackOS x86-64 (experimental)" {
               linux16 /boot/memdisk floppy
-              initrd16 /nnoobos.img
+              initrd16 /nedohackos.img
           }
 
           menuentry "KolibriOS (official fallback)" {
