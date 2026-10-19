@@ -1,59 +1,49 @@
 # Nnoobos
 
-Nnoobos is a small hobby operating system project for x86 (IA-32), written in FASM assembly. The project is being built incrementally, starting with a BIOS boot sector before adding protected mode, kernel services, drivers, memory management, and executable loading.
+Nnoobos is an experimental x86 hobby OS written in FASM assembly.
 
-> **Status:** early development. The current milestone is a minimal BIOS boot sector that prints a startup message. This is not yet a complete operating system.
+## Current prototype
 
-## Goals
+- BIOS boot sector loads a second-stage program from a floppy-style disk image.
+- Text-mode desktop prototype with a taskbar and Start menu.
+- Keyboard shortcuts: **F1** Start menu, **F2** system information, **F3** simulated setup screen, **F4** reboot, **Esc** close/redraw.
+- Uses BIOS services and VGA text mode. This is still a 16-bit real-mode prototype, not yet a 32-bit operating system.
 
-- [x] Assemble a 512-byte BIOS boot sector
-- [ ] Load a separate kernel from disk
-- [ ] Enable the A20 line and enter 32-bit protected mode
-- [ ] Add GDT, IDT, and interrupt handlers
-- [ ] Add text output and keyboard input
-- [ ] Add physical memory management and paging
-- [ ] Explore a simple filesystem
-- [ ] Parse and load PE32 executables
-
-## Repository layout
-
-```text
-Nnoobos-/
-├── boot/
-│   └── boot.asm
-├── include/
-│   ├── constants.inc
-│   ├── macros.inc
-│   └── memory_map.inc
-├── kernel/
-│   └── kernel.asm
-├── .github/workflows/build.yml
-├── .gitignore
-├── main.asm
-└── README.md
-```
+> **Important:** F3 opens a setup screen inside Nnoobos. It is not the computer's motherboard BIOS/UEFI setup. A normal application cannot replace the motherboard firmware.
 
 ## Build
 
-Install [FASM](https://flatassembler.net/) and run from the repository root:
+Install FASM on Linux and run:
 
 ```sh
 mkdir -p build
 fasm main.asm build/boot.bin
+fasm boot/stage2.asm build/stage2.bin
+test "$(wc -c < build/boot.bin)" -eq 512
+test "$(wc -c < build/stage2.bin)" -le 4096
+truncate -s 1474560 build/nnoobos.img
+dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
+dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
 ```
 
-The resulting `build/boot.bin` should be exactly 512 bytes. It can be used as a boot-sector image for testing in an emulator such as QEMU. Do not write it to a real disk; this is an experimental project.
+The image is a 1.44 MB floppy image for testing in an emulator such as QEMU. Do not write this experimental image to a real disk.
 
-On GitHub, the workflow assembles the boot sector and uploads it as a build artifact.
+## Keyboard controls
 
-## Design notes
+| Key | Action |
+| --- | --- |
+| F1 | Show Start menu; press F1 or Esc to close |
+| F2 | System information screen |
+| F3 | Nnoobos setup screen (simulation) |
+| F4 | Reboot via BIOS bootstrap interrupt |
+| Esc | Redraw desktop |
 
-- FASM syntax is used throughout.
-- The boot sector starts in 16-bit BIOS real mode.
-- The boot sector currently prints a message using BIOS interrupt `int 10h` and then halts.
-- The kernel is a separate future milestone; it is not loaded by the current boot sector yet.
-- Build output is generated in `build/` and is not committed.
+## Planned milestones
 
-## Contributing
+- Load a separate kernel reliably from disk
+- Enter 32-bit protected mode
+- Implement GDT, IDT, and interrupt handlers
+- Add keyboard driver, memory management, and filesystem
+- Explore PE32 executable loading
 
-Keep each milestone small and testable. Add new modules only when they are needed by the next milestone, and document the memory layout and boot assumptions as they evolve.
+The project is in early development. The desktop and setup screen are simple text-mode prototypes.
