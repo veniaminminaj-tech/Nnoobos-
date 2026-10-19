@@ -18,7 +18,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common mtools p7zip-full qemu-system-x86
+          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common mtools p7zip-full qemu-system-x86 imagemagick
 
       - name: Assemble and validate binaries
         run: |
@@ -82,11 +82,30 @@ jobs:
           cp "$memdisk_path" build/iso/boot/memdisk
           cp build/nedohackos.img build/iso/nedohackos.img
           cp build/kolibrios.img build/iso/kolibrios.img
-          # Bundle MakeTools source templates and file-association defaults inside the ISO.
+          # Bundle MakeTools, wallpaper, and icon assets inside the ISO.
           mkdir -p build/iso/apps
           cp -R apps/makertools build/iso/apps/makertools
+          mkdir -p build/iso/assets/wallpaper build/iso/assets/icons/original build/iso/assets/icons/512
+          if [ -d background ]; then
+            find background -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -exec cp -t build/iso/assets/wallpaper {} + || true
+          fi
+          if [ -d data/common/nedohackos ]; then
+            cp -R data/common/nedohackos/. build/iso/assets/icons/original/
+            find data/common/nedohackos -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -print0 | while IFS= read -r -d '' icon; do
+              name="$(basename "$icon")"
+              convert "$icon" -thumbnail '512x512' -background none -gravity center -extent 512x512 "build/iso/assets/icons/512/${name%.*}.png"
+            done
+          fi
           mkdir -p build/iso/docs
           cp docs/MAKETOOLS.md build/iso/docs/MAKETOOLS.md
+          cat > build/iso/ASSETS-README.txt <<'EOF'
+          NedohackOS bundled assets
+          - assets/wallpaper/: wallpaper images copied from the repository's background/ folder
+          - assets/icons/original/: original icon source files
+          - assets/icons/512/: PNG icons normalized to 512x512 pixels
+          Note: bundled assets are included in this ISO; the current experimental kernel is VGA text-mode only
+          and does not yet display a graphical desktop or load wallpaper/icons.
+          EOF
           cat > build/iso/boot/grub/grub.cfg <<'EOF'
           set timeout=8
           set default=0
