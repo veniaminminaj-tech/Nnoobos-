@@ -20,12 +20,12 @@ KolibriOS is included as a separate boot-menu option; its kernel is not used as 
 
 - BIOS boot sector loads the second stage.
 - Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
-- The 64-bit kernel writes a status screen directly to VGA text memory and emits boot diagnostics on COM1 for automated emulator testing.
+- The second stage selects VGA mode 13h and copies the BIOS 8x16 font into low memory. The 64-bit kernel draws a simple pixel-based desktop, a Start panel, icon tiles and placeholder app windows; it emits boot diagnostics on COM1 for automated emulator testing.
 - A first NEX64 executable-header validator is included as groundwork for a future native program loader.
 
-This is an early kernel milestone, not a general-purpose operating system. The current boot path replaces the old text desktop shell. The legacy shell code is not part of this new boot path until a proper 64-bit userspace/window system exists.
+This is an early kernel milestone, not a general-purpose operating system. The desktop is a single-screen kernel prototype, not a complete window manager. Files, Notes and Calculator currently show placeholder windows and do not yet save files or perform calculations.
 
-## Executable support status
+## Desktop keyboard controls\n\n- `S`: open the Start panel.\n- `1`: show the Files placeholder window.\n- `2`: show the Notes placeholder window.\n- `3`: show the Calculator placeholder window.\n- `0`: redraw the desktop.\n\n## Executable support status
 
 Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
 
@@ -33,7 +33,7 @@ Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete 
 
 - BIOS/CHS loader with a fixed 9-sector kernel read.
 - Initial page tables identity-map only the first 2 MiB.
-- VGA text mode only; no filesystem, network, GUI, mouse or Firefox.
+- VGA mode 13h desktop prototype at 320x200; no mouse driver, filesystem, network or Firefox.
 - NEX64 validation is a first step, not full executable support.
 
 ## Roadmap
