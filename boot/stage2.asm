@@ -10,7 +10,7 @@ stage2_entry:
     mov sp,0x7C00
     cld
     mov [boot_drive],dl
-    ; Load 9 sectors (kernel must fit within 4608 bytes).
+    ; Load up to 16 kernel sectors. First read reaches the end of head 0.
     mov ax,0x1000
     mov es,ax
     xor bx,bx
@@ -19,6 +19,18 @@ stage2_entry:
     mov ch,0
     mov cl,10
     mov dh,0
+    mov dl,[boot_drive]
+    int 0x13
+    jc disk_error
+    ; Continue at head 1, sector 1 (next physical sector after sector 18).
+    mov ax,0x1000
+    mov es,ax
+    mov bx,9*512
+    mov ah,2
+    mov al,7
+    mov ch,0
+    mov cl,1
+    mov dh,1
     mov dl,[boot_drive]
     int 0x13
     jc disk_error
