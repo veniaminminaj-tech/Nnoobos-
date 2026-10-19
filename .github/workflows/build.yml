@@ -1,0 +1,33 @@
+name: Build Nnoobos boot sector
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install FASM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fasm
+
+      - name: Assemble boot sector
+        run: |
+          mkdir -p build
+          fasm main.asm build/boot.bin
+          test "$(wc -c < build/boot.bin)" -eq 512
+
+      - name: Upload boot sector
+        uses: actions/upload-artifact@v4
+        with:
+          name: nnoobos-boot-sector
+          path: build/boot.bin
