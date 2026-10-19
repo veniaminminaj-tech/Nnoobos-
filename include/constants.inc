@@ -1,4 +1,4 @@
-OS_NAME            = 'NedohackersOS on FASM'
+; OS_NAME is a display string in the kernel, not a numeric assembler constant.
 SECTOR_SIZE        = 512
 BOOT_ORIGIN        = 0x7C00
 BOOT_SIGNATURE     = 0xAA55
