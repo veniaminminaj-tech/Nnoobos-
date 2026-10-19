@@ -16,7 +16,7 @@ The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. At start
 ## Current experimental x86-64 boot path
 
 - BIOS boot sector loads the second stage.
-- Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
+- Stage 2 reads the kernel from floppy sector 10 through sector 18, then continues at head 1, sector 1 (up to 16 sectors total), builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
 - The second stage selects VGA mode 13h and copies the BIOS 8x16 font into low memory. The 64-bit kernel draws a simple experimental pixel-based desktop and placeholder app windows; it emits boot diagnostics on COM1 for automated emulator testing.
 - A first NEX64 executable-header validator is included as groundwork for a future native program loader.
 
@@ -37,7 +37,7 @@ Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete 
 
 ## Current limits
 
-- BIOS/CHS loader with a fixed 9-sector kernel read.
+- BIOS/CHS loader with a fixed 16-sector maximum kernel read.
 - Initial page tables identity-map only the first 2 MiB.
 - VGA mode 13h desktop prototype at 320x200; no mouse/touch driver, filesystem, network or Firefox.
 - NEX64 validation is a first step, not full executable support.
