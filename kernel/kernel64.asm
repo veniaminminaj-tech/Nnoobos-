@@ -343,6 +343,26 @@ shell_execute:
     test al,al
     jnz .reboot
     mov rsi,shell_input
+    mov rdi,cmd_pip
+    call str_equal
+    test al,al
+    jnz .pip
+    mov rsi,shell_input
+    mov rdi,cmd_pip_version
+    call str_equal
+    test al,al
+    jnz .pip_version
+    mov rsi,shell_input
+    mov rdi,cmd_pip_list
+    call str_equal
+    test al,al
+    jnz .pip_list
+    mov rsi,shell_input
+    mov rdi,cmd_pip_install
+    call str_prefix
+    test al,al
+    jnz .pip_install
+    mov rsi,shell_input
     mov rdi,cmd_echo
     call str_prefix
     test al,al
@@ -391,6 +411,18 @@ shell_execute:
 .reboot:
     ; Restart the kernel and show the startup session chooser again.
     jmp kernel_entry
+.pip:
+    mov rsi,txt_pip
+    jmp .set
+.pip_version:
+    mov rsi,txt_pip_version
+    jmp .set
+.pip_list:
+    mov rsi,txt_pip_list
+    jmp .set
+.pip_install:
+    mov rsi,txt_pip_install
+    jmp .set
 .echo:
     ; echo is accepted; print the remainder after "echo ".
     mov rsi,shell_input
@@ -676,10 +708,14 @@ cmd_apps db 'apps',0
 cmd_env db 'env',0
 cmd_memory db 'memory',0
 cmd_reboot db 'reboot',0
+cmd_pip db 'pip',0
+cmd_pip_version db 'pip --version',0
+cmd_pip_list db 'pip list',0
+cmd_pip_install db 'pip install ',0
 cmd_echo db 'echo ',0
 cmd_unknown db 'Unknown command. Type help.',0
 empty_string db 0
-txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot echo TEXT',0
+txt_help db 'help clear uname pwd ls whoami version hostname about apps env memory reboot pip pip --version pip list pip install NAME echo TEXT',0
 txt_uname db 'Nnoobos x86_64 (experimental OS)',0
 txt_pwd db '/',0
 txt_ls db 'Desktop  Documents  Notes  Downloads',0
@@ -690,6 +726,10 @@ txt_about db 'Nnoobos: experimental hobby OS, BIOS boot, x86-64, VGA desktop.',0
 txt_apps db 'Available: Files, Notes, Calculator (prototype windows).',0
 txt_env db 'HOME=/  USER=user  SHELL=nnoobos-sh',0
 txt_memory db 'Memory map and allocator are not implemented yet.',0
+txt_pip db 'pip command is available, but Python is not installed in Nnoobos yet.',0
+txt_pip_version db 'pip compatibility stub 0.1 (Python runtime unavailable)',0
+txt_pip_list db 'No Python packages: Python runtime and package database are not implemented.',0
+txt_pip_install db 'Cannot install packages yet: Nnoobos needs Python, filesystem, and network support.',0
 ; PS/2 set-1 scan-code to lowercase ASCII lookup table.
 scan_ascii db 0,0,'1','2','3','4','5','6','7','8','9','0','-','=',0,0,'q','w','e','r','t','y','u','i','o','p','[',']',0,0,'a','s','d','f','g','h','j','k','l',';',39,'`',0,92,'z','x','c','v','b','n','m',',','.','/',0,'*',0,' '
 kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
