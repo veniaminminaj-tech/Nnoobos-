@@ -136,4 +136,5 @@ jobs:
             build/boot.bin
             build/stage2.bin
             build/kernel64.bin
-            build/qemu-serial.log\n            build/qemu-iso-serial.log
+            build/qemu-serial.log
+            build/qemu-iso-serial.log
