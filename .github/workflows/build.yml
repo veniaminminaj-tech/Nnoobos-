@@ -20,7 +20,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y fasm
 
-      - name: Assemble boot sector and desktop
+      - name: Assemble boot sector and desktop shell
         run: |
           mkdir -p build
           fasm main.asm build/boot.bin
@@ -28,7 +28,7 @@ jobs:
           test "$(wc -c < build/boot.bin)" -eq 512
           test "$(wc -c < build/stage2.bin)" -le 4096
 
-      - name: Create 1.44 MB floppy image
+      - name: Create bootable 1.44 MB floppy image
         run: |
           truncate -s 1474560 build/nnoobos.img
           dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
