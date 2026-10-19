@@ -18,7 +18,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common p7zip-full qemu-system-x86
+          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common mtools p7zip-full qemu-system-x86
 
       - name: Assemble and validate binaries
         run: |
