@@ -4,7 +4,7 @@ Nnoobos is an experimental x86 hobby OS written in FASM assembly.
 
 ## BIOS boot ISO
 
-The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. The Nnoobos desktop is an early native kernel prototype inspired by compact classic desktops: a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
+The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. At startup, Nnoobos offers a keyboard choice between its graphical desktop and a Linux-like command-line shell. The graphical session is an early native kernel prototype inspired by compact classic desktops: a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
 
 - Workflow: [Build Nnoobos desktop ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
 - After a successful run, download the artifact **nnoobos-desktop-iso**.
@@ -22,7 +22,7 @@ The ISO boots **Nnoobos itself**. KolibriOS is not bundled or launched. The Nnoo
 
 This is an early kernel milestone, not a general-purpose operating system. The desktop is a single-screen kernel prototype, not a complete window manager. Files, Notes and Calculator currently show placeholder windows and do not yet save files or perform calculations.
 
-## Experimental Nnoobos keyboard controls\n\n- `S`: open the Start panel.\n- `1`: show the Files placeholder window.\n- `2`: show the Notes placeholder window.\n- `3`: show the Calculator placeholder window.\n- `0`: redraw the desktop.\n\nThese shortcuts control the Nnoobos desktop.\n\n## Executable support status
+## Experimental Nnoobos keyboard controls\n\n- At startup, `1` selects the graphical desktop and `2` selects the terminal.\n- Desktop: `S` opens Start; `1` Files; `2` Notes; `3` Calculator; `0` redraws the desktop.\n- Terminal: `help`, `clear`, `uname`, `pwd`, `ls`, `whoami`, `echo TEXT`; `T` exits the terminal.\n\nThese shortcuts control the Nnoobos desktop.\n\n## Executable support status
 
 Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
 
