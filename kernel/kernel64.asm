@@ -327,7 +327,7 @@ serial_write:
     pop rbx
     ret
 
-kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP',13,10,0
+kernel_banner db 'NNOOBOS x86-64 KERNEL - GRAPHICAL DESKTOP | Long mode: ACTIVE',13,10,0
 desktop_title db 'NNOOBOS',0
 brand_label db 'NNOOBOS DESKTOP',0
 files_label db 'FILES',0
