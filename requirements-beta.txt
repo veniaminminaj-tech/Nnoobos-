@@ -1,0 +1,3 @@
+# Optional dependency for an embedded HTML browser inside the desktop window.
+# Without it, the Browser app opens pages in your normal system browser.
+tkinterweb>=4.0
