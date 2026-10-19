@@ -77,8 +77,8 @@ jobs:
         run: |
           set -eu
           mkdir -p build/iso/boot/grub
-          curl --fail --location --retry 3 --retry-delay 2 \\
-            https://i.redd.it/dxvano55l0qg1.jpg \\
+          curl --fail --location --retry 3 --retry-delay 2 \
+            https://i.redd.it/dxvano55l0qg1.jpg \
             --output build/iso/Shedletsky.jpg
           test -s build/iso/Shedletsky.jpg
           memdisk_path="$(find /usr/lib -type f -name memdisk -print -quit)"
