@@ -44,7 +44,7 @@ disk_error:
     jmp .hang
 
 boot_drive db 0
-disk_error_message db 'Nnoobos: disk read error', 0
+disk_error_message db 'NedohackersOS on FASM: disk read error', 0
 
 if ($ - $$) > 510
     display 'ERROR: boot sector exceeds 510 bytes', 13, 10
