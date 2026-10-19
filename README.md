@@ -4,14 +4,14 @@ NedohackersOS on FASM is an experimental x86 hobby OS written in FASM assembly.
 
 ## BIOS boot ISO
 
-The ISO boots **NedohackersOS on FASM itself**. KolibriOS is not bundled or launched. At startup, NedohackersOS on FASM offers a keyboard choice between its graphical desktop and a Linux-like command-line shell. The graphical session is an early native kernel prototype inspired by compact classic desktops: a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
+The ISO boots **NedohackersOS on FASM itself**. KolibriOS is not bundled or launched. It starts directly on the graphical desktop; press `T` to open the Linux-like command-line shell. The graphical session is an early native kernel prototype with a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
 
 - Workflow: [Build NedohackersOS on FASM desktop ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
 - After a successful run, download the artifact **nedohackersos-on-fasm-iso**.
 - Start `nedohackersos-on-fasm.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), 256–512 MB RAM, and the ISO attached as the optical drive.
 - This image is BIOS/Legacy boot only; UEFI mode is not supported.
 - `Shedletsky.jpg` is included as an image resource; it is not yet the desktop wallpaper.
-- A basic polled PS/2 mouse cursor has been added to the graphical desktop; click-to-open icons and full USB HID support are not implemented yet.
+- A polled PS/2 mouse cursor and basic left-click actions are implemented for the desktop icons, Start button/menu, and a window close target. USB HID and VirtualBox absolute-pointer support are not implemented.
 
 ## Current experimental x86-64 boot path
 
@@ -20,12 +20,12 @@ The ISO boots **NedohackersOS on FASM itself**. KolibriOS is not bundled or laun
 - The second stage selects VGA mode 13h and copies the BIOS 8x16 font into low memory. The 64-bit kernel draws a simple experimental pixel-based desktop and placeholder app windows; it emits boot diagnostics on COM1 for automated emulator testing.
 - A first NEX64 executable-header validator is included as groundwork for a future native program loader.
 
-This is an early kernel milestone, not a general-purpose operating system. The desktop is a single-screen kernel prototype, not a complete window manager. Files, Notes and Calculator currently show placeholder windows and do not yet save files or perform calculations.
+This is an early kernel milestone, not a general-purpose operating system. The desktop is a single-screen kernel prototype, not a complete window manager. Files, Notes and Calculator still show placeholder windows and do not yet save files or perform calculations. A filesystem, disk driver, persistent file storage, and VirtualBox host-to-guest drag-and-drop protocol are not implemented.
 
 ## Experimental NedohackersOS on FASM keyboard controls
 
 - At startup, press 1 for the graphical desktop or 2 for the terminal.
-- Desktop: S opens Start; 1 Files; 2 Notes; 3 Calculator; 0 redraws the desktop.
+- Desktop: `S` opens Start; `1` Files; `2` Notes; `3` Calculator; `0` redraws the desktop. With the PS/2 mouse, click Files/Notes/Calculator icons or the Start button; click the menu item row to select an app.
 - Terminal: help, clear, uname, pwd, ls, whoami, echo TEXT, python, python --version, and the limited python print("Hello").
 - Terminal game demo: type game, move the red block with the left/right arrow keys, and press Esc to return.
 
@@ -39,7 +39,7 @@ NedohackersOS on FASM does **not** yet run Windows `.exe` files, DOS MZ programs
 
 - BIOS/CHS loader with a fixed 16-sector maximum kernel read.
 - Initial page tables identity-map only the first 2 MiB.
-- VGA mode 13h desktop prototype at 320x200; no mouse/touch driver, filesystem, network or Firefox.
+- VGA mode 13h desktop prototype at 320x200; basic PS/2 mouse only, no USB HID, filesystem, persistent storage, network, or Firefox.
 - NEX64 validation is a first step, not full executable support.
 
 ## Roadmap
