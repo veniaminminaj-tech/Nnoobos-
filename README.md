@@ -22,6 +22,10 @@ This is a 16-bit real-mode prototype, not a Linux distribution and not yet a 32-
 
 These are starter routines and are **not yet linked into the boot image**. The current desktop already calls BIOS services directly.
 
+## EXE files and browser support
+
+Nnoobos does not yet launch Windows `.exe` files or run Firefox. The current 16-bit BIOS prototype lacks the filesystem, process/memory protection, APIs, graphics and networking required for these features. See [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md) for the technical milestones and references. The roadmap is documentation, not implemented support.
+
 ## Python and archive support
 
 Nnoobos does not yet run CPython or WinRAR/RAR tools. See [Python and archive roadmap](docs/PYTHON_AND_ARCHIVES.md) for a realistic implementation plan. Python needs a runtime and OS services; archive support needs a filesystem and an archive implementation. A limited built-in Python-like interpreter could be an intermediate step.
@@ -69,7 +73,8 @@ Run `build/nnoobos.img` in an emulator such as QEMU as a floppy image. Do not wr
 - Reliable disk loading and a separate 32-bit kernel
 - GDT, IDT, protected mode, interrupt handling
 - Keyboard driver, memory manager, filesystem
-- Real windows/mouse and executable loading
+- Real windows/mouse and a validated native executable loader
+- Text-mode browser, network stack, then investigate a full browser engine
 - Limited scripting interpreter, then investigate real Python runtime
 - Filesystem and archive tools; evaluate legally distributable RAR support
 
