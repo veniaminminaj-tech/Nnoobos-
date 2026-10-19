@@ -1,4 +1,4 @@
-; Nnoobos stage 2: load the 64-bit kernel and enter x86-64 long mode.
+; NedohackOS stage 2: load the 64-bit kernel and enter x86-64 long mode.
 ; BIOS is used only before protected/long mode. Kernel is loaded at physical 0x10000.
 use16
 org 0x8000
@@ -115,4 +115,4 @@ gdt_pointer:
     dd gdt_start
 
 boot_drive db 0
-disk_error_message db 'Nnoobos: kernel disk read error', 0
+disk_error_message db 'NedohackOS: kernel disk read error', 0

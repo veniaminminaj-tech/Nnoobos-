@@ -1,4 +1,4 @@
-; Nnoobos experimental x86-64 kernel.
+; NedohackOS experimental x86-64 kernel.
 ; Loaded at physical 0x10000; first 2 MiB are identity-mapped by stage2.
 use64
 org 0x10000
@@ -154,7 +154,7 @@ nex_validate_header:
     pop rbx
     ret
 
-kernel_banner db 'NNOOBOS x86-64 KERNEL', 0
+kernel_banner db 'NEDOHACKOS x86-64 KERNEL', 0
 kernel_line1  db 'Long mode: ACTIVE | VGA text output: ACTIVE', 0
 kernel_line2  db 'Native executable format: NEX64 (header validator added)', 0
 kernel_line3  db 'EXE loading is not active: filesystem and process API are next.', 0

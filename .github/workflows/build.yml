@@ -1,4 +1,4 @@
-name: Build Nnoobos x86-64 + KolibriOS ISO
+name: Build NedohackOS x86-64 + KolibriOS ISO
 
 on:
   push:
@@ -32,13 +32,13 @@ jobs:
           test "$(wc -c < build/kernel64.bin)" -gt 0
           test "$(wc -c < build/kernel64.bin)" -le 4608
 
-      - name: Create Nnoobos floppy image
+      - name: Create NedohackOS floppy image
         run: |
           set -eu
-          truncate -s 1474560 build/nnoobos.img
-          dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
-          dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
-          dd if=build/kernel64.bin of=build/nnoobos.img bs=512 seek=9 conv=notrunc
+          truncate -s 1474560 build/nedohackos.img
+          dd if=build/boot.bin of=build/nedohackos.img conv=notrunc
+          dd if=build/stage2.bin of=build/nedohackos.img bs=512 seek=1 conv=notrunc
+          dd if=build/kernel64.bin of=build/nedohackos.img bs=512 seek=9 conv=notrunc
 
       - name: Boot-test Nnoobos in QEMU
         run: |
@@ -46,7 +46,7 @@ jobs:
           set +e
           timeout 8s qemu-system-x86_64 \
             -machine pc -accel tcg -cpu qemu64 -m 128M \
-            -drive file=build/nnoobos.img,if=floppy,format=raw \
+            -drive file=build/nedohackos.img,if=floppy,format=raw \
             -boot a -display none -monitor none \
             -serial file:build/qemu-serial.log -no-reboot -no-shutdown
           qemu_status=$?
@@ -57,7 +57,7 @@ jobs:
             exit 1
           fi
           cat build/qemu-serial.log
-          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-serial.log
+          grep -q 'NEDOHACKOS x86-64 KERNEL' build/qemu-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-serial.log
 
       - name: Download official KolibriOS floppy image
@@ -80,7 +80,7 @@ jobs:
           memdisk_path="$(find /usr/lib -type f -name memdisk -print -quit)"
           test -n "$memdisk_path"
           cp "$memdisk_path" build/iso/boot/memdisk
-          cp build/nnoobos.img build/iso/nnoobos.img
+          cp build/nedohackos.img build/iso/nnoobos.img
           cp build/kolibrios.img build/iso/kolibrios.img
           # Bundle MakeTools source templates and file-association defaults inside the ISO.
           mkdir -p build/iso/apps
@@ -91,7 +91,7 @@ jobs:
           set timeout=8
           set default=0
 
-          menuentry "Nnoobos x86-64 (experimental)" {
+          menuentry "NedohackOS x86-64 (experimental)" {
               linux16 /boot/memdisk floppy
               initrd16 /nnoobos.img
           }
@@ -101,9 +101,9 @@ jobs:
               initrd16 /kolibrios.img
           }
           EOF
-          grub-mkrescue -o build/nnoobos-kolibri.iso build/iso
-          test -s build/nnoobos-kolibri.iso
-          file build/nnoobos-kolibri.iso
+          grub-mkrescue -o build/nedohackos-kolibri.iso build/iso
+          test -s build/nedohackos-kolibri.iso
+          file build/nedohackos-kolibri.iso
 
       - name: Boot-test the complete ISO in QEMU (BIOS)
         run: |
@@ -111,7 +111,7 @@ jobs:
           set +e
           timeout 12s qemu-system-x86_64 \
             -machine pc -accel tcg -cpu qemu64 -m 256M \
-            -cdrom build/nnoobos-kolibri.iso -boot d \
+            -cdrom build/nedohackos-kolibri.iso -boot d \
             -display none -monitor none \
             -serial file:build/qemu-iso-serial.log -no-reboot -no-shutdown
           qemu_status=$?
@@ -122,16 +122,16 @@ jobs:
             exit 1
           fi
           cat build/qemu-iso-serial.log
-          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-iso-serial.log
+          grep -q 'NEDOHACKOS x86-64 KERNEL' build/qemu-iso-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-iso-serial.log
 
       - name: Upload tested ISO and images
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-kolibri-boot-iso
+          name: nedohackos-kolibri-boot-iso
           path: |
-            build/nnoobos-kolibri.iso
-            build/nnoobos.img
+            build/nedohackos-kolibri.iso
+            build/nedohackos.img
             build/kolibrios.img
             build/boot.bin
             build/stage2.bin
