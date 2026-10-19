@@ -2,6 +2,12 @@
 
 NedohackersOS on FASM is an experimental x86 hobby OS written in FASM assembly.
 
+## Beta desktop prototype
+
+- Launch the host-side desktop prototype with `run_beta.bat` on Windows.
+- Includes a Python IDE with Run/output and `.py` open/save, plus a browser window.
+- Setup and limitations: [Beta desktop guide](docs/BETA_DESKTOP.md).
+
 ## BIOS boot ISO
 
 The ISO boots **NedohackersOS on FASM itself**. KolibriOS is not bundled or launched. It starts directly on the graphical desktop; press `T` to open the Linux-like command-line shell. The graphical session is an early native kernel prototype with a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
