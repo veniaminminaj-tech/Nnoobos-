@@ -10,6 +10,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
@@ -150,9 +151,42 @@ class BetaDesktop(tk.Tk):
                          padx=12, pady=10, relief="flat")
         editor.pack(fill="both", expand=True, padx=12, pady=4)
         editor.insert("1.0", 'print("Hello from NedohackersOS Beta!")\nfor i in range(3):\n    print("Python works:", i + 1)\n')
+        current_file = {"path": None}
+
+        def open_file():
+            from tkinter import filedialog
+            path = filedialog.askopenfilename(parent=win, title="Open Python file", filetypes=[("Python files", "*.py"), ("All files", "*.*")])
+            if not path:
+                return
+            try:
+                with open(path, "r", encoding="utf-8") as stream:
+                    source = stream.read()
+                editor.delete("1.0", "end")
+                editor.insert("1.0", source)
+                current_file["path"] = path
+                win.title(f"{os.path.basename(path)} — Python IDE")
+            except (OSError, UnicodeError) as exc:
+                messagebox.showerror("Open failed", str(exc), parent=win)
+
+        def save_file():
+            from tkinter import filedialog
+            path = current_file["path"] or filedialog.asksaveasfilename(parent=win, title="Save Python file", defaultextension=".py", filetypes=[("Python files", "*.py"), ("All files", "*.*")])
+            if not path:
+                return
+            try:
+                with open(path, "w", encoding="utf-8", newline="\n") as stream:
+                    stream.write(editor.get("1.0", "end-1c"))
+                current_file["path"] = path
+                win.title(f"{os.path.basename(path)} — Python IDE")
+                set_output(f"Saved: {path}")
+            except OSError as exc:
+                messagebox.showerror("Save failed", str(exc), parent=win)
+
 
         controls = tk.Frame(win, bg=BG)
         controls.pack(fill="x", padx=12, pady=6)
+        ttk.Button(controls, text="Open .py", command=open_file).pack(side="left", padx=(0, 6))
+        ttk.Button(controls, text="Save .py", command=save_file).pack(side="left", padx=(0, 6))
         output = tk.Text(win, height=8, bg="#080d16", fg="#a7f3d0",
                          insertbackground=TEXT, font=("Consolas", 10),
                          relief="flat", padx=10, pady=8)
@@ -169,23 +203,21 @@ class BetaDesktop(tk.Tk):
         def run_code():
             source = editor.get("1.0", "end-1c")
             set_output("Running Python…")
-            try:
-                with tempfile.TemporaryDirectory(prefix="nedo_beta_") as workdir:
-                    result = subprocess.run(
-                        [sys.executable, "-I", "-c", source],
-                        cwd=workdir, capture_output=True, text=True,
-                        timeout=8, check=False
-                    )
-                combined = result.stdout
-                if result.stderr:
-                    combined += ("\n" if combined else "") + result.stderr
-                if not combined:
-                    combined = f"Finished with exit code {result.returncode} (no output)."
-                set_output(combined[:20000])
-            except subprocess.TimeoutExpired:
-                set_output("Stopped: execution exceeded the 8-second limit.")
-            except Exception as exc:
-                set_output(f"Could not start Python: {exc}")
+            def worker():
+                try:
+                    with tempfile.TemporaryDirectory(prefix="nedo_beta_") as workdir:
+                        result = subprocess.run([sys.executable, "-I", "-c", source], cwd=workdir, capture_output=True, text=True, timeout=8, check=False)
+                    combined = result.stdout
+                    if result.stderr:
+                        combined += ("\n" if combined else "") + result.stderr
+                    if not combined:
+                        combined = f"Finished with exit code {result.returncode} (no output)."
+                except subprocess.TimeoutExpired:
+                    combined = "Stopped: execution exceeded the 8-second limit."
+                except Exception as exc:
+                    combined = f"Could not start Python: {exc}"
+                self.after(0, lambda result_text=combined: set_output(result_text[:20000]))
+            threading.Thread(target=worker, daemon=True).start()
 
         ttk.Button(controls, text="▶ Run", style="Accent.TButton",
                    command=run_code).pack(side="left")
