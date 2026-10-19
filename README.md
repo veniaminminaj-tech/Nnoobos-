@@ -6,7 +6,7 @@ NedohackersOS on FASM is an experimental x86 hobby OS written in FASM assembly.
 
 The ISO boots **NedohackersOS on FASM itself**. KolibriOS is not bundled or launched. At startup, NedohackersOS on FASM offers a keyboard choice between its graphical desktop and a Linux-like command-line shell. The graphical session is an early native kernel prototype inspired by compact classic desktops: a top header, bottom taskbar, desktop icons, Start menu, and simple app windows.
 
-- Workflow: [Build NedohackersOS on FASM desktop ISO](https://github.com/veniaminminaj-tech/NedohackersOS on FASM-/actions/workflows/build.yml)
+- Workflow: [Build NedohackersOS on FASM desktop ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
 - After a successful run, download the artifact **nedohackersos-on-fasm-iso**.
 - Start `nedohackersos-on-fasm.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), 256–512 MB RAM, and the ISO attached as the optical drive.
 - This image is BIOS/Legacy boot only; UEFI mode is not supported.
