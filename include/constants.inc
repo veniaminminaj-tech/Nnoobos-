@@ -1,6 +1,0 @@
-OS_NAME            = 'Nnoobos'
-SECTOR_SIZE        = 512
-BOOT_ORIGIN        = 0x7C00
-BOOT_SIGNATURE     = 0xAA55
-KERNEL_LOAD_PHYS   = 0x10000
-STACK_TOP_PHYS     = 0x90000

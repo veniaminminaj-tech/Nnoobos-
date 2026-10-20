@@ -1,49 +1,21 @@
-# Nnoobos
+# NedohackOS
 
-Nnoobos is an experimental x86 hobby OS written in FASM assembly.
+NedohackOS is a customization project intended to use MenuetOS as its operating-system base. This branch keeps the NedohackOS visual assets and removes the experimental Nnoobos kernel, its bootloader, and the KolibriOS fallback.
 
-## BIOS boot ISO with a boot menu
+## Included assets
 
-The GitHub Actions workflow assembles Nnoobos, runs a QEMU boot smoke test, downloads the official KolibriOS floppy image, and creates a BIOS ISO with a menu for both systems.
+- `background/image_760c3e80.jpg` — wallpaper supplied for NedohackOS
+- `nedohackos/assets/background/nedohackos-wallpaper.jpg` — copy of the wallpaper
+- `nedohackos/assets/icons8/` — eight 256×256 SVG desktop icon concepts
+- `apps/makertools/` — source templates and file-association defaults
+- `docs/MAKETOOLS.md` and `docs/PYTHON_AND_ARCHIVES.md` — retained tooling notes
 
-- Workflow: [Build Nnoobos x86-64 + KolibriOS ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
-- After a successful run, download the artifact **nnoobos-kolibri-boot-iso**.
-- Start `nnoobos-kolibri.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), chipset **PIIX3** or default, 256–512 MB RAM, and the ISO attached as the optical drive.
-- In VMware, use a BIOS firmware VM and attach the ISO as a CD/DVD image. In QEMU, use `-cdrom nnoobos-kolibri.iso -boot d`.
-- If the VM says **No bootable medium**, check that EFI is disabled and the ISO is mounted as a CD/DVD, not as a hard disk. If Nnoobos hangs, choose the KolibriOS entry to check whether the VM's BIOS boot path works.
-- Choose **Nnoobos x86-64 (experimental)** to test Nnoobos, or **KolibriOS (official fallback)** to confirm the virtual machine can boot a known working system.
-- The workflow checks both the raw Nnoobos floppy and the complete ISO boot path in QEMU, then uploads the serial logs. The ISO is BIOS/Legacy boot only; UEFI mode is not supported by this boot menu.
+## Important status
 
-KolibriOS is included as a separate boot-menu option; its kernel is not used as the Nnoobos kernel. The two operating systems have different kernel and boot requirements.
+This branch does **not** contain a bootable operating-system image yet. It does not bundle MenuetOS, because the MenuetOS 64-bit distribution has its own license and must be obtained and used according to its terms. No Nnoobos kernel, Nnoobos bootloader, or KolibriOS image is built or included here.
 
-## Current experimental x86-64 boot path
+The included wallpaper and SVG icons are staged assets; they are not yet automatically installed into the MenuetOS desktop. The next integration step is to confirm the supported MenuetOS configuration and desktop icon formats, then test the customization using a MenuetOS image that you are authorized to use.
 
-- BIOS boot sector loads the second stage.
-- Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
-- The 64-bit kernel writes a status screen directly to VGA text memory and emits boot diagnostics on COM1 for automated emulator testing.
-- A first NEX64 executable-header validator is included as groundwork for a future native program loader.
+## Assets package
 
-This is an early kernel milestone, not a general-purpose operating system. The current boot path replaces the old text desktop shell. The legacy shell code is not part of this new boot path until a proper 64-bit userspace/window system exists.
-
-## Executable support status
-
-Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
-
-## Current limits
-
-- BIOS/CHS loader with a fixed 9-sector kernel read.
-- Initial page tables identity-map only the first 2 MiB.
-- VGA text mode only; no filesystem, network, GUI, mouse or Firefox.
-- NEX64 validation is a first step, not full executable support.
-
-## Roadmap
-
-- IDT, exception handlers and serial diagnostics
-- Physical and virtual memory management
-- Filesystem and disk file reads
-- Complete NEX64 loader and controlled execution model
-- Process isolation and system calls
-- Separate DOS MZ compatibility research; Windows PE compatibility is a long-term project
-- Network stack and a browser after kernel services exist
-
-Test only in an emulator with disposable disk images. Do not write the experimental image to a real disk.
+The GitHub Actions workflow creates a ZIP containing only the NedohackOS wallpaper, icon assets, and relevant tooling notes. It does not claim to build an ISO.

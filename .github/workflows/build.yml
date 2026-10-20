@@ -1,4 +1,4 @@
-name: Build Nnoobos x86-64 + KolibriOS ISO
+name: Package NedohackOS visual assets
 
 on:
   push:
@@ -9,132 +9,41 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  package-assets:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fasm grub-pc-bin grub-common xorriso syslinux-common mtools p7zip-full qemu-system-x86
-
-      - name: Assemble and validate binaries
+      - name: Validate NedohackOS assets
         run: |
           set -eu
-          mkdir -p build
-          fasm main.asm build/boot.bin
-          fasm boot/stage2.asm build/stage2.bin
-          fasm kernel/kernel64.asm build/kernel64.bin
-          test "$(wc -c < build/boot.bin)" -eq 512
-          test "$(wc -c < build/stage2.bin)" -le 4096
-          test "$(wc -c < build/kernel64.bin)" -gt 0
-          test "$(wc -c < build/kernel64.bin)" -le 4608
+          test -s background/image_760c3e80.jpg
+          test -s nedohackos/assets/background/nedohackos-wallpaper.jpg
+          test -s nedohackos/assets/icons8/computer.svg
+          test -s nedohackos/assets/icons8/folder.svg
+          test -s nedohackos/assets/icons8/text-file.svg
+          test -s nedohackos/assets/icons8/trash.svg
+          test -s nedohackos/assets/icons8/terminal.svg
+          test -s nedohackos/assets/icons8/settings.svg
+          test -s nedohackos/assets/icons8/browser.svg
+          test -s nedohackos/assets/icons8/app-grid.svg
 
-      - name: Create Nnoobos floppy image
+      - name: Package visual assets and notes
         run: |
           set -eu
-          truncate -s 1474560 build/nnoobos.img
-          dd if=build/boot.bin of=build/nnoobos.img conv=notrunc
-          dd if=build/stage2.bin of=build/nnoobos.img bs=512 seek=1 conv=notrunc
-          dd if=build/kernel64.bin of=build/nnoobos.img bs=512 seek=9 conv=notrunc
+          mkdir -p dist
+          zip -r dist/nedohackos-assets.zip \
+            background/image_760c3e80.jpg \
+            nedohackos/assets/background \
+            nedohackos/assets/icons8 \
+            apps/makertools \
+            docs/MAKETOOLS.md \
+            docs/PYTHON_AND_ARCHIVES.md \
+            README.md
 
-      - name: Boot-test Nnoobos in QEMU
-        run: |
-          set -eu
-          set +e
-          timeout 8s qemu-system-x86_64 \
-            -machine pc -accel tcg -cpu qemu64 -m 128M \
-            -drive file=build/nnoobos.img,if=floppy,format=raw \
-            -boot a -display none -monitor none \
-            -serial file:build/qemu-serial.log -no-reboot -no-shutdown
-          qemu_status=$?
-          set -e
-          if [ "$qemu_status" -ne 124 ] && [ "$qemu_status" -ne 0 ]; then
-            echo "QEMU exited unexpectedly with status $qemu_status"
-            cat build/qemu-serial.log || true
-            exit 1
-          fi
-          cat build/qemu-serial.log
-          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-serial.log
-          grep -q 'Long mode: ACTIVE' build/qemu-serial.log
-
-      - name: Download official KolibriOS floppy image
-        run: |
-          set -eu
-          mkdir -p build/kolibri
-          curl --fail --location --retry 3 --retry-delay 2 \
-            https://builds.kolibrios.org/en_US/latest-img.7z \
-            --output build/kolibri-img.7z
-          7z x -y build/kolibri-img.7z -obuild/kolibri
-          kolibri_image="$(find build/kolibri -type f -iname '*.img' -print -quit)"
-          test -n "$kolibri_image"
-          cp "$kolibri_image" build/kolibrios.img
-          test -s build/kolibrios.img
-
-      - name: Create BIOS boot menu ISO
-        run: |
-          set -eu
-          mkdir -p build/iso/boot/grub
-          memdisk_path="$(find /usr/lib -type f -name memdisk -print -quit)"
-          test -n "$memdisk_path"
-          cp "$memdisk_path" build/iso/boot/memdisk
-          cp build/nnoobos.img build/iso/nnoobos.img
-          cp build/kolibrios.img build/iso/kolibrios.img
-          # Bundle MakeTools source templates and file-association defaults inside the ISO.
-          mkdir -p build/iso/apps
-          cp -R apps/makertools build/iso/apps/makertools
-          mkdir -p build/iso/docs
-          cp docs/MAKETOOLS.md build/iso/docs/MAKETOOLS.md
-          cat > build/iso/boot/grub/grub.cfg <<'EOF'
-          set timeout=8
-          set default=0
-
-          menuentry "Nnoobos x86-64 (experimental)" {
-              linux16 /boot/memdisk floppy
-              initrd16 /nnoobos.img
-          }
-
-          menuentry "KolibriOS (official fallback)" {
-              linux16 /boot/memdisk floppy
-              initrd16 /kolibrios.img
-          }
-          EOF
-          grub-mkrescue -o build/nnoobos-kolibri.iso build/iso
-          test -s build/nnoobos-kolibri.iso
-          file build/nnoobos-kolibri.iso
-
-      - name: Boot-test the complete ISO in QEMU (BIOS)
-        run: |
-          set -eu
-          set +e
-          timeout 12s qemu-system-x86_64 \
-            -machine pc -accel tcg -cpu qemu64 -m 256M \
-            -cdrom build/nnoobos-kolibri.iso -boot d \
-            -display none -monitor none \
-            -serial file:build/qemu-iso-serial.log -no-reboot -no-shutdown
-          qemu_status=$?
-          set -e
-          if [ "$qemu_status" -ne 124 ] && [ "$qemu_status" -ne 0 ]; then
-            echo "QEMU ISO boot failed with status $qemu_status"
-            cat build/qemu-iso-serial.log || true
-            exit 1
-          fi
-          cat build/qemu-iso-serial.log
-          grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-iso-serial.log
-          grep -q 'Long mode: ACTIVE' build/qemu-iso-serial.log
-
-      - name: Upload tested ISO and images
+      - name: Upload NedohackOS assets
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-kolibri-boot-iso
-          path: |
-            build/nnoobos-kolibri.iso
-            build/nnoobos.img
-            build/kolibrios.img
-            build/boot.bin
-            build/stage2.bin
-            build/kernel64.bin
-            build/qemu-serial.log
-            build/qemu-iso-serial.log
+          name: nedohackos-assets
+          path: dist/nedohackos-assets.zip
