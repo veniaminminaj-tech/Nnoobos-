@@ -124,7 +124,7 @@ jobs:
           grep -q 'NedohackOS (KolibriOS base)' build/iso/boot/grub/grub.cfg
           grep -q 'linux16 /boot/memdisk floppy' build/iso/boot/grub/grub.cfg
           grep -q 'initrd16 /kolibrios.img' build/iso/boot/grub/grub.cfg
-          grep -q 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
+          grep -qi 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
           # Inspect the ISO paths, then extract each required file to a known destination.
