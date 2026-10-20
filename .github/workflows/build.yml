@@ -73,19 +73,29 @@ jobs:
           cp "$kolibri_image" build/kolibrios.img
           test -s build/kolibrios.img
 
-          # Set the wallpaper in KolibriOS itself, not just as an extra ISO file.
-          # KolibriOS reads its desktop startup list from autorun.dat on the FAT ramdisk.
+          # Locate the startup list in common KolibriOS image layouts.
           mdir -i build/kolibrios.img ::
-          mcopy -i build/kolibrios.img ::autorun.dat build/autorun.dat
-          grep -Fq '\S__background.jpg' build/autorun.dat
+          autorun_path=""
+          for candidate in ::/autorun.dat ::/SETTINGS/autorun.dat; do
+            if mcopy -i build/kolibrios.img "$candidate" build/autorun.dat 2>/dev/null; then
+              autorun_path="$candidate"
+              break
+            fi
+          done
+          if [ -z "$autorun_path" ]; then
+            echo "Could not find autorun.dat in the downloaded KolibriOS image."
+            mdir -i build/kolibrios.img -s ::
+            exit 1
+          fi
+          grep -Fqi '\S__background.jpg' build/autorun.dat
           convert background/nedohackos-neon-1920x1080.svg -resize '800x600^' -gravity center -extent 800x600 -quality 82 build/NEDO.JPG
           sed 's|\\S__background\.jpg|\\S__NEDO.JPG|g' build/autorun.dat > build/autorun-nedohackos.dat
-          grep -Fq '\S__NEDO.JPG' build/autorun-nedohackos.dat
+          grep -Fqi '\S__NEDO.JPG' build/autorun-nedohackos.dat
           mcopy -o -i build/kolibrios.img build/NEDO.JPG ::NEDO.JPG
-          mcopy -o -i build/kolibrios.img build/autorun-nedohackos.dat ::autorun.dat
+          mcopy -o -i build/kolibrios.img build/autorun-nedohackos.dat "$autorun_path"
           mdir -i build/kolibrios.img ::
-          mtype -i build/kolibrios.img ::autorun.dat | grep -Fq '\S__NEDO.JPG'
-
+          mcopy -i build/kolibrios.img "$autorun_path" build/verify-autorun.dat
+          grep -Fqi '\S__NEDO.JPG' build/verify-autorun.dat
       - name: Build single-system NedohackOS ISO from official KolibriOS
         run: |
           set -eu
