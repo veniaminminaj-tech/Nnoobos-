@@ -1,4 +1,4 @@
-name: Build Nnoobos x86-64 + KolibriOS ISO
+name: Build NedohackOS graphical desktop ISO
 
 on:
   push:
@@ -59,6 +59,7 @@ jobs:
           cat build/qemu-serial.log
           grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-serial.log
+          grep -q 'GRAPHICAL DESKTOP: ACTIVE' build/qemu-serial.log
 
       - name: Download official KolibriOS floppy image
         run: |
@@ -101,7 +102,7 @@ jobs:
               initrd16 /kolibrios.img
           }
           EOF
-          grub-mkrescue -o build/nnoobos-kolibri.iso build/iso
+          grub-mkrescue -o build/nedohackos-graphical.iso build/iso
           test -s build/nnoobos-kolibri.iso
           file build/nnoobos-kolibri.iso
 
@@ -124,11 +125,12 @@ jobs:
           cat build/qemu-iso-serial.log
           grep -q 'NNOOBOS x86-64 KERNEL' build/qemu-iso-serial.log
           grep -q 'Long mode: ACTIVE' build/qemu-iso-serial.log
+          grep -q 'GRAPHICAL DESKTOP: ACTIVE' build/qemu-iso-serial.log
 
       - name: Upload tested ISO and images
         uses: actions/upload-artifact@v4
         with:
-          name: nnoobos-kolibri-boot-iso
+          name: nedohackos-graphical-iso
           path: |
             build/nnoobos-kolibri.iso
             build/nnoobos.img
