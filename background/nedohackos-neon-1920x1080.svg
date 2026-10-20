@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#050816"/><stop offset=".48" stop-color="#101d43"/><stop offset="1" stop-color="#071018"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#00d9ff" stop-opacity=".42"/><stop offset="1" stop-color="#00d9ff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5cf4ff"/><stop offset="1" stop-color="#5c7cff"/></linearGradient>
+ <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#7adfff" stroke-opacity=".08" stroke-width="1"/></pattern>
+ <filter id="blur"><feGaussianBlur stdDeviation="32"/></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#bg)"/><rect width="1920" height="1080" fill="url(#grid)"/>
+<ellipse cx="1450" cy="300" rx="550" ry="420" fill="url(#glow)" filter="url(#blur)"/>
+<path d="M0 810 360 610 650 760 1020 390 1320 590 1660 250 1920 410V1080H0Z" fill="#07101e" opacity=".76"/>
+<path d="M0 900 420 700 700 820 1090 510 1410 670 1740 390 1920 490" fill="none" stroke="#00d9ff" stroke-opacity=".32" stroke-width="3"/>
+<g transform="translate(1190 260)">
+ <path d="M0 90 95 0H260L355 90V265L260 355H95L0 265Z" fill="#071525" stroke="url(#mark)" stroke-width="5"/>
+ <path d="M75 105H265L225 145H120V210H235L195 250H75Z" fill="url(#mark)"/>
+ <path d="M280 105V250H240L200 210H160L200 170H240V145Z" fill="#f2fbff"/>
+ <path d="M-30 178H-5M360 178H385M177 -30V-5M177 360V385" stroke="#5cf4ff" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+</g>
+<text x="120" y="810" fill="#f2fbff" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="700" letter-spacing="8">NEDOHACKOS</text>
+<text x="126" y="870" fill="#72dfff" font-family="Arial,Helvetica,sans-serif" font-size="27" letter-spacing="7">KOLIBRIOS-BASED • X86</text>
+<path d="M124 914H640" stroke="#00d9ff" stroke-width="4" opacity=".8"/>
+<text x="126" y="970" fill="#9bb4d6" font-family="Arial,Helvetica,sans-serif" font-size="20" letter-spacing="3">BUILT FOR EXPLORATION</text>
+</svg>
