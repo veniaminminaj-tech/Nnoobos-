@@ -8,6 +8,7 @@
 - The generated ISO has a single boot entry: **NedohackOS (KolibriOS base)**. It no longer offers a separate experimental x86-64 kernel as a second OS.
 - Repository wallpapers from `background/` and icon sources from `data/common/nedohackos/` are packaged in the ISO under `NEDOHACKOS/`.
 - Raster icon images are additionally normalized to **512 × 512 pixels** under `NEDOHACKOS/icons/512/`.
+- The visual assets target **Full HD (1920 × 1080)**; see [Full HD setup](docs/FULL_HD.md) for enabling and checking that mode in the guest.
 - MakeTools files are included in the same ISO.
 - GitHub Actions performs a QEMU boot smoke test of the ISO.
 
