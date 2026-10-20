@@ -102,6 +102,9 @@ jobs:
           cat > build/iso/NEDOHACKOS/README.txt <<'EOF'
           NedohackOS is packaged as one KolibriOS-based bootable system.
           wallpaper/ contains repository backgrounds, including a rendered 1920x1080 Full HD PNG.
+          Full HD target: 1920x1080. The actual KolibriOS desktop mode is selected by its video driver/settings
+          and depends on the VM/display adapter; packaging a Full HD wallpaper cannot force the guest display mode.
+          See docs/FULL_HD.md for setup and verification.
           icons/original/ preserves source SVG icons.
           icons/512/ contains normalized 512x512 PNG copies of each SVG and raster icon.
           makertools/ contains the project's MakeTools files.
