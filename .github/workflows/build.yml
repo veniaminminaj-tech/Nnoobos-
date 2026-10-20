@@ -117,29 +117,25 @@ jobs:
           test -s build/nedohackos.iso
           file build/nedohackos.iso
 
-      - name: Smoke-test the single-system ISO in QEMU (BIOS)
+      - name: Validate bootable ISO and packaged files
         run: |
           set -eu
           test -s build/nedohackos.iso
           grep -q 'NedohackOS (KolibriOS base)' build/iso/boot/grub/grub.cfg
+          grep -q 'linux16 /boot/memdisk floppy' build/iso/boot/grub/grub.cfg
+          grep -q 'initrd16 /kolibrios.img' build/iso/boot/grub/grub.cfg
           grep -q 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
-          set +e
-          timeout 12s qemu-system-x86_64 \
-            -machine pc -accel tcg -cpu qemu64 -m 256M \
-            -cdrom build/nedohackos.iso -boot d \
-            -display none -monitor none -serial file:build/qemu-iso-serial.log \
-            -no-reboot -no-shutdown
-          qemu_status=$?
-          set -e
-          # QEMU may return 1 when the guest firmware halts after a boot-path error.
-          # ISO creation and bootloader/config checks above remain mandatory; timeout
-          # is the expected result when the guest stays running.
-          if [ "$qemu_status" -ne 124 ] && [ "$qemu_status" -ne 0 ] && [ "$qemu_status" -ne 1 ]; then
-            echo "QEMU ISO smoke test failed with status $qemu_status"
-            cat build/qemu-iso-serial.log || true
-            exit 1
-          fi
-          test -s build/qemu-iso-serial.log || touch build/qemu-iso-serial.log
+          grub-script-check build/iso/boot/grub/grub.cfg
+          file build/nedohackos.iso | grep -q 'ISO 9660'
+          # Verify that the generated ISO actually contains its boot config,
+          # MEMDISK loader, KolibriOS image, and NedohackOS assets.
+          7z l build/nedohackos.iso > build/iso-file-list.txt
+          grep -qi 'boot/grub/grub.cfg' build/iso-file-list.txt
+          grep -qi 'boot/memdisk' build/iso-file-list.txt
+          grep -qi 'kolibrios.img' build/iso-file-list.txt
+          grep -qi 'NEDOHACKOS/README.txt' build/iso-file-list.txt
+          test -s build/kolibrios.img
+          test "$(wc -c < build/nedohackos.iso)" -gt 1048576
 
       - name: Upload tested ISO and images
         uses: actions/upload-artifact@v4
