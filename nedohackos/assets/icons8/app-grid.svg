@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" shape-rendering="crispEdges">
+<title>NedohackOS Pixel App Launcher</title>
+<rect x="24" y="24" width="96" height="96" rx="10" fill="#5b9ee8"/><rect x="40" y="40" width="64" height="64" fill="#c9ecff"/><rect x="52" y="52" width="40" height="40" fill="#3978c1"/>
+<rect x="136" y="24" width="96" height="96" rx="10" fill="#f5bd52"/><rect x="152" y="40" width="64" height="64" fill="#fff0b7"/><path d="M152 88l24-26 16 16 12-12 12 22v16h-64z" fill="#e69a35"/>
+<rect x="24" y="136" width="96" height="96" rx="10" fill="#65c99b"/><rect x="40" y="152" width="64" height="64" fill="#d6ffdf"/><rect x="52" y="164" width="40" height="40" fill="#329c76"/>
+<rect x="136" y="136" width="96" height="96" rx="10" fill="#bd8be8"/><rect x="152" y="152" width="64" height="64" fill="#f0ddff"/><rect x="164" y="164" width="40" height="40" fill="#8955c0"/>
+</svg>
