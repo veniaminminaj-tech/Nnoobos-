@@ -1,4 +1,4 @@
-name: Package NedohackOS visual assets
+name: Package NedohackOS MenuetOS overlay
 
 on:
   push:
@@ -15,26 +15,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate NedohackOS assets
+      - name: Validate overlay inputs
         run: |
           set -eu
-          test -s background/image_760c3e80.jpg
+          test -s menuetos/BGR.JPG
+          test -s menuetos/config.mnt.overlay.txt
           test -s nedohackos/assets/background/nedohackos-wallpaper.jpg
-          test -s nedohackos/assets/icons8/computer.svg
-          test -s nedohackos/assets/icons8/folder.svg
-          test -s nedohackos/assets/icons8/text-file.svg
-          test -s nedohackos/assets/icons8/trash.svg
-          test -s nedohackos/assets/icons8/terminal.svg
-          test -s nedohackos/assets/icons8/settings.svg
-          test -s nedohackos/assets/icons8/browser.svg
-          test -s nedohackos/assets/icons8/app-grid.svg
+          for icon in app-grid browser computer folder settings terminal text-file trash; do
+            test -s "nedohackos/assets/icons8/$icon.svg"
+          done
 
-      - name: Package visual assets and notes
+      - name: Create bitmap icon previews
+        run: |
+          set -eu
+          sudo apt-get update
+          sudo apt-get install -y imagemagick librsvg2-bin
+          mkdir -p dist/nedohackos-icons-bmp
+          for icon in app-grid browser computer folder settings terminal text-file trash; do
+            rsvg-convert -w 64 -h 64 "nedohackos/assets/icons8/$icon.svg" | convert png:- "BMP3:dist/nedohackos-icons-bmp/$icon.bmp"
+          done
+
+      - name: Package NedohackOS overlay
         run: |
           set -eu
           mkdir -p dist
           zip -r dist/nedohackos-assets.zip \
-            background/image_760c3e80.jpg \
+            menuetos/README.md \
+            menuetos/config.mnt.overlay.txt \
+            menuetos/BGR.JPG \
+            dist/nedohackos-icons-bmp \
             nedohackos/assets/background \
             nedohackos/assets/icons8 \
             apps/makertools \
@@ -42,7 +51,7 @@ jobs:
             docs/PYTHON_AND_ARCHIVES.md \
             README.md
 
-      - name: Upload NedohackOS assets
+      - name: Upload NedohackOS overlay
         uses: actions/upload-artifact@v4
         with:
           name: nedohackos-assets

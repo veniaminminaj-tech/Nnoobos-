@@ -1,0 +1,3 @@
+# Merge this setting into your existing MenuetOS config.mnt.
+# Copy BGR.JPG into the MenuetOS system directory first.
+background              = '\SYSDIR\BGR.JPG'
