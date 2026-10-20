@@ -85,21 +85,25 @@ jobs:
           # Package every repository wallpaper and icon with the one bootable KolibriOS-based system.
           if [ -d background ]; then
             find background -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -exec cp -t build/iso/NEDOHACKOS/wallpaper {} + || true
+            find background -maxdepth 1 -type f -iname '*.svg' -print0 | while IFS= read -r -d '' wallpaper; do
+              name="$(basename "${wallpaper%.*}")"
+              convert -background '#07101e' "$wallpaper" -resize '1920x1080^' -gravity center -extent 1920x1080 "build/iso/NEDOHACKOS/wallpaper/${name}-1920x1080.png"
+            done
           fi
           if [ -d data/common/nedohackos ]; then
             cp -R data/common/nedohackos/. build/iso/NEDOHACKOS/icons/original/
-            find data/common/nedohackos -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -print0 | while IFS= read -r -d '' icon; do
-              name="$(basename "$icon")"
-              convert "$icon" -thumbnail '512x512' -background none -gravity center -extent 512x512 "build/iso/NEDOHACKOS/icons/512/${name%.*}.png"
+            find data/common/nedohackos -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.svg' \) -print0 | while IFS= read -r -d '' icon; do
+              name="$(basename "${icon%.*}")"
+              convert "$icon" -thumbnail '512x512' -background none -gravity center -extent 512x512 "build/iso/NEDOHACKOS/icons/512/${name}.png"
             done
           fi
           cp docs/MAKETOOLS.md build/iso/docs/MAKETOOLS.md
           cp -R apps/makertools build/iso/NEDOHACKOS/makertools
           cat > build/iso/NEDOHACKOS/README.txt <<'EOF'
           NedohackOS is packaged as one KolibriOS-based bootable system.
-          wallpapers/ contains images from the repository background/ folder.
-          icons/original/ preserves source icons.
-          icons/512/ contains normalized 512x512 PNG copies.
+          wallpaper/ contains repository backgrounds, including a rendered 1920x1080 Full HD PNG.
+          icons/original/ preserves source SVG icons.
+          icons/512/ contains normalized 512x512 PNG copies of each SVG and raster icon.
           makertools/ contains the project's MakeTools files.
           Note: PNG icon files are bundled here; applying them to the KolibriOS desktop requires converting/installing
           them into KolibriOS's native iconstrp.gif sprite and updating its icons.dat. This workflow does not pretend
@@ -125,6 +129,9 @@ jobs:
           grep -q 'linux16 /boot/memdisk floppy' build/iso/boot/grub/grub.cfg
           grep -q 'initrd16 /kolibrios.img' build/iso/boot/grub/grub.cfg
           grep -qi 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
+          test -s build/iso/NEDOHACKOS/wallpaper/nedohackos-neon-1920x1080.png
+          identify -format '%wx%h' build/iso/NEDOHACKOS/wallpaper/nedohackos-neon-1920x1080.png | grep -qx '1920x1080'
+          test "$(find build/iso/NEDOHACKOS/icons/512 -maxdepth 1 -type f -name '*.png' | wc -l)" -ge 8
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
           # Extract required files directly; xorriso -find -print is not a valid action on all versions.
