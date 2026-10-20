@@ -77,14 +77,14 @@ jobs:
           # KolibriOS reads its desktop startup list from autorun.dat on the FAT ramdisk.
           mdir -i build/kolibrios.img ::
           mcopy -i build/kolibrios.img ::autorun.dat build/autorun.dat
-          grep -Fq '\\S__background.jpg' build/autorun.dat
+          grep -Fq '\S__background.jpg' build/autorun.dat
           convert background/nedohackos-neon-1920x1080.svg -resize '800x600^' -gravity center -extent 800x600 -quality 82 build/NEDO.JPG
-          sed 's|\\\\S__background\\.jpg|\\\\S__NEDO.JPG|g' build/autorun.dat > build/autorun-nedohackos.dat
-          grep -Fq '\\S__NEDO.JPG' build/autorun-nedohackos.dat
+          sed 's|\\S__background\.jpg|\\S__NEDO.JPG|g' build/autorun.dat > build/autorun-nedohackos.dat
+          grep -Fq '\S__NEDO.JPG' build/autorun-nedohackos.dat
           mcopy -o -i build/kolibrios.img build/NEDO.JPG ::NEDO.JPG
           mcopy -o -i build/kolibrios.img build/autorun-nedohackos.dat ::autorun.dat
           mdir -i build/kolibrios.img ::
-          mtype -i build/kolibrios.img ::autorun.dat | grep -Fq '\\S__NEDO.JPG'
+          mtype -i build/kolibrios.img ::autorun.dat | grep -Fq '\S__NEDO.JPG'
 
       - name: Build single-system NedohackOS ISO from official KolibriOS
         run: |
@@ -164,7 +164,7 @@ jobs:
           grep -qi 'NedohackOS (KolibriOS base)' build/verify-grub.cfg
           grep -qi 'NEDOHACKOS' build/verify-README.txt
           cmp build/kolibrios.img build/verify-kolibrios.img
-          mtype -i build/verify-kolibrios.img ::autorun.dat | grep -Fq '\\S__NEDO.JPG'
+          mtype -i build/verify-kolibrios.img ::autorun.dat | grep -Fq '\S__NEDO.JPG'
           mdir -i build/verify-kolibrios.img :: | grep -qi 'NEDO.JPG'
           test "$(wc -c < build/nedohackos.iso)" -gt 1048576
 
