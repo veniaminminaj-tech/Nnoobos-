@@ -134,7 +134,7 @@ jobs:
           grep -qi 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
           test -s build/iso/NEDOHACKOS/wallpaper/nedohackos-neon-1920x1080.png
           identify -format '%wx%h' build/iso/NEDOHACKOS/wallpaper/nedohackos-neon-1920x1080.png | grep -qx '1920x1080'
-          test "$(find build/iso/NEDOHACKOS/icons/512 -maxdepth 1 -type f -name '*.png' | wc -l)" -ge 8
+          test "$(find build/iso/NEDOHACKOS/icons/512 -maxdepth 1 -type f -name '*.png' | wc -l)" -ge 28
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
           # Extract required files directly; xorriso -find -print is not a valid action on all versions.
