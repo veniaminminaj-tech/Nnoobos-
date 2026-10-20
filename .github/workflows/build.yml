@@ -127,13 +127,7 @@ jobs:
           grep -qi 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
-          # Inspect the ISO paths, then extract each required file to a known destination.
-          xorriso -indev build/nedohackos.iso -find / -type f -print > build/iso-file-list.txt 2> build/xorriso-list.log
-          cat build/iso-file-list.txt
-          grep -Fq '/boot/grub/grub.cfg' build/iso-file-list.txt
-          grep -Fq '/boot/memdisk' build/iso-file-list.txt
-          grep -Fq '/kolibrios.img' build/iso-file-list.txt
-          grep -Fq '/NEDOHACKOS/README.txt' build/iso-file-list.txt
+          # Extract required files directly; xorriso -find -print is not a valid action on all versions.
           xorriso -osirrox on -indev build/nedohackos.iso -extract /boot/grub/grub.cfg build/verify-grub.cfg
           xorriso -osirrox on -indev build/nedohackos.iso -extract /boot/memdisk build/verify-memdisk
           xorriso -osirrox on -indev build/nedohackos.iso -extract /kolibrios.img build/verify-kolibrios.img
