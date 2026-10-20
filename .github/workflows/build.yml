@@ -119,7 +119,7 @@ jobs:
 
       - name: Validate bootable ISO and packaged files
         run: |
-          set -eu
+          set -euxo pipefail
           test -s build/nedohackos.iso
           grep -q 'NedohackOS (KolibriOS base)' build/iso/boot/grub/grub.cfg
           grep -q 'linux16 /boot/memdisk floppy' build/iso/boot/grub/grub.cfg
@@ -127,20 +127,24 @@ jobs:
           grep -q 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
-          # Extract with xorriso (the same ISO toolchain used by grub-mkrescue).
-          mkdir -p build/iso-verify
-          xorriso -osirrox on -indev build/nedohackos.iso -extract / build/iso-verify
-          grub_cfg="build/iso-verify/boot/grub/grub.cfg"
-          memdisk="build/iso-verify/boot/memdisk"
-          kolibri_img="build/iso-verify/kolibrios.img"
-          readme="build/iso-verify/NEDOHACKOS/README.txt"
-          test -s "$grub_cfg"
-          test -s "$memdisk"
-          test -s "$kolibri_img"
-          test -s "$readme"
-          grep -qi 'NedohackOS (KolibriOS base)' "$grub_cfg"
-          grep -qi 'NEDOHACKOS' "$readme"
-          cmp build/kolibrios.img "$kolibri_img"
+          # Inspect the ISO paths, then extract each required file to a known destination.
+          xorriso -indev build/nedohackos.iso -find / -type f -print > build/iso-file-list.txt 2> build/xorriso-list.log
+          cat build/iso-file-list.txt
+          grep -Fq '/boot/grub/grub.cfg' build/iso-file-list.txt
+          grep -Fq '/boot/memdisk' build/iso-file-list.txt
+          grep -Fq '/kolibrios.img' build/iso-file-list.txt
+          grep -Fq '/NEDOHACKOS/README.txt' build/iso-file-list.txt
+          xorriso -osirrox on -indev build/nedohackos.iso -extract /boot/grub/grub.cfg build/verify-grub.cfg
+          xorriso -osirrox on -indev build/nedohackos.iso -extract /boot/memdisk build/verify-memdisk
+          xorriso -osirrox on -indev build/nedohackos.iso -extract /kolibrios.img build/verify-kolibrios.img
+          xorriso -osirrox on -indev build/nedohackos.iso -extract /NEDOHACKOS/README.txt build/verify-README.txt
+          test -s build/verify-grub.cfg
+          test -s build/verify-memdisk
+          test -s build/verify-kolibrios.img
+          test -s build/verify-README.txt
+          grep -qi 'NedohackOS (KolibriOS base)' build/verify-grub.cfg
+          grep -qi 'NEDOHACKOS' build/verify-README.txt
+          cmp build/kolibrios.img build/verify-kolibrios.img
           test "$(wc -c < build/nedohackos.iso)" -gt 1048576
 
       - name: Upload tested ISO and images
