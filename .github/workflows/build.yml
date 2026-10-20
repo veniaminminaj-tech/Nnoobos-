@@ -73,6 +73,19 @@ jobs:
           cp "$kolibri_image" build/kolibrios.img
           test -s build/kolibrios.img
 
+          # Set the wallpaper in KolibriOS itself, not just as an extra ISO file.
+          # KolibriOS reads its desktop startup list from autorun.dat on the FAT ramdisk.
+          mdir -i build/kolibrios.img ::
+          mcopy -i build/kolibrios.img ::autorun.dat build/autorun.dat
+          grep -Fq '\\S__background.jpg' build/autorun.dat
+          convert background/nedohackos-neon-1920x1080.svg -resize '800x600^' -gravity center -extent 800x600 -quality 82 build/NEDO.JPG
+          sed 's|\\\\S__background\\.jpg|\\\\S__NEDO.JPG|g' build/autorun.dat > build/autorun-nedohackos.dat
+          grep -Fq '\\S__NEDO.JPG' build/autorun-nedohackos.dat
+          mcopy -o -i build/kolibrios.img build/NEDO.JPG ::NEDO.JPG
+          mcopy -o -i build/kolibrios.img build/autorun-nedohackos.dat ::autorun.dat
+          mdir -i build/kolibrios.img ::
+          mtype -i build/kolibrios.img ::autorun.dat | grep -Fq '\\S__NEDO.JPG'
+
       - name: Build single-system NedohackOS ISO from official KolibriOS
         run: |
           set -eu
@@ -102,8 +115,10 @@ jobs:
           cat > build/iso/NEDOHACKOS/README.txt <<'EOF'
           NedohackOS is packaged as one KolibriOS-based bootable system.
           wallpaper/ contains repository backgrounds, including a rendered 1920x1080 Full HD PNG.
-          Full HD target: 1920x1080. The actual KolibriOS desktop mode is selected by its video driver/settings
-          and depends on the VM/display adapter; packaging a Full HD wallpaper cannot force the guest display mode.
+          The NedohackOS wallpaper is also installed into the KolibriOS ramdisk and selected in autorun.dat,
+          so it is applied automatically when the desktop starts. The runtime wallpaper is 800x600 JPEG for
+          compatibility with the compact KolibriOS ramdisk; the original Full HD wallpaper is also included below.
+          Full HD target: 1920x1080. The actual desktop mode depends on the VM/display adapter.
           See docs/FULL_HD.md for setup and verification.
           icons/original/ preserves source SVG icons.
           icons/512/ contains normalized 512x512 PNG copies of each SVG and raster icon.
@@ -149,6 +164,8 @@ jobs:
           grep -qi 'NedohackOS (KolibriOS base)' build/verify-grub.cfg
           grep -qi 'NEDOHACKOS' build/verify-README.txt
           cmp build/kolibrios.img build/verify-kolibrios.img
+          mtype -i build/verify-kolibrios.img ::autorun.dat | grep -Fq '\\S__NEDO.JPG'
+          mdir -i build/verify-kolibrios.img :: | grep -qi 'NEDO.JPG'
           test "$(wc -c < build/nedohackos.iso)" -gt 1048576
 
       - name: Upload tested ISO and images
