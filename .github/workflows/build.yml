@@ -127,13 +127,19 @@ jobs:
           grep -q 'NEDOHACKOS' build/iso/NEDOHACKOS/README.txt
           grub-script-check build/iso/boot/grub/grub.cfg
           file build/nedohackos.iso | grep -q 'ISO 9660'
-          # Verify the files recorded in the ISO filesystem. xorriso's -find
-          # prints ISO paths consistently without depending on extraction path casing.
-          xorriso -indev build/nedohackos.iso -find / -type f -print > build/iso-file-list.txt
-          grep -Eqi '/boot/grub/grub[.]cfg' build/iso-file-list.txt
-          grep -Eqi '/boot/memdisk' build/iso-file-list.txt
-          grep -Eqi '/kolibrios[.]img' build/iso-file-list.txt
-          grep -Eqi '/NEDOHACKOS/README[.]txt' build/iso-file-list.txt
+          # Extract the finished ISO and verify its actual contents.
+          mkdir -p build/iso-verify
+          7z x -y -obuild/iso-verify build/nedohackos.iso > build/iso-verify/7z.log
+          grub_cfg="$(find build/iso-verify -type f -iname grub.cfg -print -quit)"
+          memdisk="$(find build/iso-verify -type f -iname memdisk -print -quit)"
+          kolibri_img="$(find build/iso-verify -type f -iname kolibrios.img -print -quit)"
+          readme="$(find build/iso-verify -type f -iname README.txt -print -quit)"
+          test -n "$grub_cfg" && test -s "$grub_cfg"
+          test -n "$memdisk" && test -s "$memdisk"
+          test -n "$kolibri_img" && test -s "$kolibri_img"
+          test -n "$readme" && test -s "$readme"
+          grep -qi 'NedohackOS (KolibriOS base)' "$grub_cfg"
+          grep -qi 'NEDOHACKOS' "$readme"
           test -s build/kolibrios.img
           test "$(wc -c < build/nedohackos.iso)" -gt 1048576
 
