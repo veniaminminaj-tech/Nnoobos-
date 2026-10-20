@@ -87,7 +87,7 @@ jobs:
             find background -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -exec cp -t build/iso/NEDOHACKOS/wallpaper {} + || true
             find background -maxdepth 1 -type f -iname '*.svg' -print0 | while IFS= read -r -d '' wallpaper; do
               name="$(basename "${wallpaper%.*}")"
-              convert -background '#07101e' "$wallpaper" -resize '1920x1080^' -gravity center -extent 1920x1080 "build/iso/NEDOHACKOS/wallpaper/${name}-1920x1080.png"
+              convert -background '#07101e' "$wallpaper" -resize '1920x1080^' -gravity center -extent 1920x1080 "build/iso/NEDOHACKOS/wallpaper/${name}.png"
             done
           fi
           if [ -d data/common/nedohackos ]; then
