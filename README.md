@@ -1,49 +1,38 @@
-# Nnoobos
+# NedohackOS
 
-Nnoobos is an experimental x86 hobby OS written in FASM assembly.
+NedohackOS is an experimental x86-64 hobby operating system written in FASM assembly.
 
-## BIOS boot ISO with a boot menu
+## BIOS boot ISO
 
-The GitHub Actions workflow assembles Nnoobos, runs a QEMU boot smoke test, downloads the official KolibriOS floppy image, and creates a BIOS ISO with a menu for both systems.
+The GitHub Actions workflow assembles the boot sector, stage 2 and 64-bit kernel, tests the raw image in QEMU, downloads the official KolibriOS image as a separate fallback option, and packages both choices into a BIOS bootable ISO.
 
-- Workflow: [Build Nnoobos x86-64 + KolibriOS ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
-- After a successful run, download the artifact **nnoobos-kolibri-boot-iso**.
-- Start `nnoobos-kolibri.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), chipset **PIIX3** or default, 256–512 MB RAM, and the ISO attached as the optical drive.
-- In VMware, use a BIOS firmware VM and attach the ISO as a CD/DVD image. In QEMU, use `-cdrom nnoobos-kolibri.iso -boot d`.
-- If the VM says **No bootable medium**, check that EFI is disabled and the ISO is mounted as a CD/DVD, not as a hard disk. If Nnoobos hangs, choose the KolibriOS entry to check whether the VM's BIOS boot path works.
-- Choose **Nnoobos x86-64 (experimental)** to test Nnoobos, or **KolibriOS (official fallback)** to confirm the virtual machine can boot a known working system.
-- The workflow checks both the raw Nnoobos floppy and the complete ISO boot path in QEMU, then uploads the serial logs. The ISO is BIOS/Legacy boot only; UEFI mode is not supported by this boot menu.
+- Workflow: [Build NedohackOS graphical desktop ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
+- After a successful run, download the artifact **nedohackos-graphical-iso**.
+- The ISO is BIOS/Legacy boot only; disable EFI/UEFI in the virtual machine.
+- QEMU example: `qemu-system-x86_64 -cdrom nedohackos-graphical.iso -boot d`
+- Choose **NedohackOS x86-64 (experimental)** for the new desktop, or **KolibriOS (official fallback)** to boot KolibriOS separately.
 
-KolibriOS is included as a separate boot-menu option; its kernel is not used as the Nnoobos kernel. The two operating systems have different kernel and boot requirements.
+## Current graphical milestone
 
-## Current experimental x86-64 boot path
+- Stage 2 asks the BIOS for VBE 800×600×24-bit graphics mode before entering long mode.
+- The kernel draws a built-in dark neon desktop, app tiles, a central panel and a bottom taskbar directly to the linear framebuffer.
+- The kernel reports graphical startup over COM1 so the QEMU workflow can verify it.
+- If the BIOS cannot provide the requested VBE mode, the kernel falls back to a VGA text diagnostic screen.
 
-- BIOS boot sector loads the second stage.
-- Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
-- The 64-bit kernel writes a status screen directly to VGA text memory and emits boot diagnostics on COM1 for automated emulator testing.
-- A first NEX64 executable-header validator is included as groundwork for a future native program loader.
+This is an early graphical prototype: the drawn tiles are placeholders, not yet the SVG icon files in `nedohackos/assets/icons8`. The background image in the assets folder is also not yet embedded into the boot image. Mouse input, clickable windows, a filesystem, app launching, networking and a native userspace are not implemented yet.
 
-This is an early kernel milestone, not a general-purpose operating system. The current boot path replaces the old text desktop shell. The legacy shell code is not part of this new boot path until a proper 64-bit userspace/window system exists.
+## Boot architecture
 
-## Executable support status
+- BIOS boot sector loads stage 2.
+- Stage 2 reads the kernel from floppy sectors 10–18, sets up identity-mapped 2 MiB pages for the first 4 GiB, and enters x86-64 long mode.
+- The kernel renders the desktop using a VBE linear framebuffer when available and keeps COM1 diagnostics for emulator tests.
+- KolibriOS remains a separate boot-menu fallback; it is not the NedohackOS kernel.
 
-Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
+## Current limitations
 
-## Current limits
+- BIOS/CHS loader with a fixed 9-sector kernel read; kernel must remain at or below 4608 bytes.
+- The framebuffer mode currently targets VBE 800×600×24-bit.
+- No mouse, keyboard-driven desktop interaction, filesystem, networking, or executable loading yet.
+- The NEX64 code is only an in-memory header validator, not a complete program loader.
 
-- BIOS/CHS loader with a fixed 9-sector kernel read.
-- Initial page tables identity-map only the first 2 MiB.
-- VGA text mode only; no filesystem, network, GUI, mouse or Firefox.
-- NEX64 validation is a first step, not full executable support.
-
-## Roadmap
-
-- IDT, exception handlers and serial diagnostics
-- Physical and virtual memory management
-- Filesystem and disk file reads
-- Complete NEX64 loader and controlled execution model
-- Process isolation and system calls
-- Separate DOS MZ compatibility research; Windows PE compatibility is a long-term project
-- Network stack and a browser after kernel services exist
-
-Test only in an emulator with disposable disk images. Do not write the experimental image to a real disk.
+Test only in an emulator with disposable disk images. Do not write this experimental image to a real disk.
