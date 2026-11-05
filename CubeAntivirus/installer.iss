@@ -1,5 +1,5 @@
 #define MyAppName "Cube Antivirus"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "Cube Antivirus"
 
 [Setup]
@@ -22,6 +22,7 @@ RestartApplications=no
 
 [Files]
 Source: "..\artifacts\CubeAntivirus\CubeAntivirus.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifacts\CubeAntivirus\CubeAntivirus.HoneyPot.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Cube Antivirus"; Filename: "{app}\CubeAntivirus.exe"

@@ -64,6 +64,37 @@
                     </DataGrid>
                 </DockPanel>
             </TabItem>
+            <TabItem Header="HoneyPot">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20" MaxWidth="900" HorizontalAlignment="Left">
+                        <TextBlock Text="Honeypot disk and process" FontSize="21" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <TextBlock Text="A local folder mapped as a temporary Windows drive. Synthetic decoy files only." Foreground="#91A4B8" TextWrapping="Wrap" Margin="0,0,0,18"/>
+                        <Border Background="#142236" CornerRadius="10" Padding="16" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="VIRTUAL HONEYPOT DRIVE" FontWeight="SemiBold" Foreground="#43D9A2"/>
+                                <TextBlock x:Name="HoneyPotDiskPath" Text="Loading…" Margin="0,8,0,12" TextWrapping="Wrap"/>
+                                <WrapPanel>
+                                    <Button Content="Create / attach drive" Click="CreateHoneyPotDrive_Click" Padding="14,8" Margin="0,0,8,0"/>
+                                    <Button Content="Open drive" Click="OpenHoneyPotDrive_Click" Padding="14,8" Margin="0,0,8,0"/>
+                                    <Button Content="Detach drive" Click="RemoveHoneyPotDrive_Click" Padding="14,8"/>
+                                </WrapPanel>
+                                <TextBlock x:Name="HoneyPotDriveStatus" Text="Drive not attached" Foreground="#FFC46B" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#142236" CornerRadius="10" Padding="16" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="TASK MANAGER TEST PROCESS" FontWeight="SemiBold" Foreground="#43D9A2"/>
+                                <TextBlock Text="Start a visible harmless worker. End it in Windows Task Manager to test exit detection. Cube Antivirus will not restart it." Foreground="#91A4B8" TextWrapping="Wrap" Margin="0,8,0,12"/>
+                                <WrapPanel>
+                                    <Button x:Name="StartHoneyPotProcessButton" Content="Start decoy process" Click="StartHoneyPotProcess_Click" Padding="14,8"/>
+                                    <TextBlock x:Name="HoneyPotProcessStatus" Text="Not running" VerticalAlignment="Center" Margin="14,0,0,0" Foreground="#FFC46B"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="This is a normal user-mode process. Windows and other authorized tools can also end it; it cannot technically be restricted to Task Manager alone. No hidden startup, persistence, self-restart or process protection is used." Foreground="#91A4B8" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
             <TabItem Header="Quarantine">
                 <DockPanel Margin="14">
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">

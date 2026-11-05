@@ -29,19 +29,28 @@ jobs:
         run: dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release --no-restore
       - name: Publish self-contained EXE
         run: dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
+      - name: Create HoneyPot worker executable
+        shell: pwsh
+        run: Copy-Item artifacts/CubeAntivirus/CubeAntivirus.exe artifacts/CubeAntivirus/CubeAntivirus.HoneyPot.exe
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Build Windows installer
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/installer | Out-Null
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "CubeAntivirus\installer.iss"
+          & "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe" "CubeAntivirus\installer.iss"
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
       - name: Upload portable EXE
         uses: actions/upload-artifact@v4
         with:
           name: CubeAntivirus-portable-win-x64
           path: artifacts/CubeAntivirus/CubeAntivirus.exe
+          if-no-files-found: error
+      - name: Upload HoneyPot worker
+        uses: actions/upload-artifact@v4
+        with:
+          name: CubeAntivirus-HoneyPot-worker-win-x64
+          path: artifacts/CubeAntivirus/CubeAntivirus.HoneyPot.exe
           if-no-files-found: error
       - name: Upload installer
         uses: actions/upload-artifact@v4
