@@ -12,6 +12,7 @@ on:
       - 'MainWindow.xaml.cs'
       - 'App.xaml'
       - 'App.xaml.cs'
+      - 'app.manifest'
       - 'CubeAntivirus/**'
       - '.github/workflows/cube-antivirus.yml'
   pull_request:
