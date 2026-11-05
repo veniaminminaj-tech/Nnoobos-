@@ -115,7 +115,8 @@ public sealed class FileScanner
             cancellationToken.ThrowIfCancellationRequested();
             var directory = pending.Pop();
 
-            IEnumerable<string> files;
+            string[] files;
+            string? listingError = null;
             try
             {
                 files = Directory.EnumerateFiles(directory).ToArray();
@@ -123,8 +124,14 @@ public sealed class FileScanner
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
                                        or SecurityException)
             {
+                files = Array.Empty<string>();
+                listingError = ex.Message;
+            }
+
+            if (listingError is not null)
+            {
                 yield return new ScanResult(directory, ScanStatus.Error,
-                    $"Cannot list folder: {ex.Message}");
+                    $"Cannot list folder: {listingError}");
                 continue;
             }
 
@@ -135,7 +142,8 @@ public sealed class FileScanner
                     .ConfigureAwait(false);
             }
 
-            IEnumerable<string> childDirectories;
+            string[] childDirectories;
+            listingError = null;
             try
             {
                 childDirectories = Directory.EnumerateDirectories(directory).ToArray();
@@ -143,24 +151,43 @@ public sealed class FileScanner
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
                                        or SecurityException)
             {
+                childDirectories = Array.Empty<string>();
+                listingError = ex.Message;
+            }
+
+            if (listingError is not null)
+            {
                 yield return new ScanResult(directory, ScanStatus.Error,
-                    $"Cannot list subfolders: {ex.Message}");
+                    $"Cannot list subfolders: {listingError}");
                 continue;
             }
 
             foreach (var child in childDirectories)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                bool isReparsePoint;
+                string? attributeError = null;
+
                 try
                 {
-                    if ((File.GetAttributes(child) & FileAttributes.ReparsePoint) == 0)
-                        pending.Push(child);
+                    isReparsePoint =
+                        (File.GetAttributes(child) & FileAttributes.ReparsePoint) != 0;
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
                                            or SecurityException)
                 {
+                    isReparsePoint = true;
+                    attributeError = ex.Message;
+                }
+
+                if (attributeError is not null)
+                {
                     yield return new ScanResult(child, ScanStatus.Error,
-                        $"Cannot inspect folder: {ex.Message}");
+                        $"Cannot inspect folder: {attributeError}");
+                }
+                else if (!isReparsePoint)
+                {
+                    pending.Push(child);
                 }
             }
         }
