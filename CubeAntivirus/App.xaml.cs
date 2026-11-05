@@ -1,0 +1,1 @@
+using System.Windows; using CubeAntivirus.Core; namespace CubeAntivirus; public partial class App : Application { protected override void OnStartup(StartupEventArgs e) { ProcessProtection.Initialize(); base.OnStartup(e); } }

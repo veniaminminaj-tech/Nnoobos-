@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWPF>true</UseWPF><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><AssemblyName>CubeAntivirus</AssemblyName><RootNamespace>CubeAntivirus</RootNamespace><ApplicationManifest>app.manifest</ApplicationManifest></PropertyGroup></Project>

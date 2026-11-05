@@ -1,0 +1,1 @@
+namespace CubeAntivirus.Models; public enum ScanStatus { Clean, Threat, Warning, Error } public sealed record ScanResult(string Path, ScanStatus Status, string Details, string? Sha256 = null);
