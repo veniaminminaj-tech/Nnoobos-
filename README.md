@@ -1,49 +1,25 @@
-# Nnoobos
+# Cube Antivirus 1.3.0
 
-Nnoobos is an experimental x86 hobby OS written in FASM assembly.
+Windows x64 WPF defensive utility targeting .NET 10.
 
-## BIOS boot ISO with a boot menu
+## Features
+- Recursive read-only file scan with SHA-256 and heuristic warnings.
+- Copy-only quarantine with hash verification and restore protection.
+- Read-only process inventory and advisory command-line indicators.
+- Synthetic HoneyPot files in a dedicated local folder, optionally mapped as a temporary drive using Windows SUBST.
+- HoneyPot filesystem change logging (created, changed, renamed, deleted).
+- Optional visible HoneyPot worker process for Task Manager exit-detection tests.
+- Local event log, portable self-contained EXE and Inno Setup installer.
 
-The GitHub Actions workflow assembles Nnoobos, runs a QEMU boot smoke test, downloads the official KolibriOS floppy image, and creates a BIOS ISO with a menu for both systems.
+## HoneyPot details and limitations
+The virtual drive is a SUBST mapping to the local folder %LOCALAPPDATA%\CubeAntivirus\HoneyPotDisk. It is not a separate partition or physical disk and contains synthetic placeholders only. The mapping is temporary and can be detached in the HoneyPot tab.
 
-- Workflow: [Build Nnoobos x86-64 + KolibriOS ISO](https://github.com/veniaminminaj-tech/Nnoobos-/actions/workflows/build.yml)
-- After a successful run, download the artifact **nnoobos-kolibri-boot-iso**.
-- Start `nnoobos-kolibri.iso` in VirtualBox with **Enable EFI turned off** (Legacy BIOS), chipset **PIIX3** or default, 256–512 MB RAM, and the ISO attached as the optical drive.
-- In VMware, use a BIOS firmware VM and attach the ISO as a CD/DVD image. In QEMU, use `-cdrom nnoobos-kolibri.iso -boot d`.
-- If the VM says **No bootable medium**, check that EFI is disabled and the ISO is mounted as a CD/DVD, not as a hard disk. If Nnoobos hangs, choose the KolibriOS entry to check whether the VM's BIOS boot path works.
-- Choose **Nnoobos x86-64 (experimental)** to test Nnoobos, or **KolibriOS (official fallback)** to confirm the virtual machine can boot a known working system.
-- The workflow checks both the raw Nnoobos floppy and the complete ISO boot path in QEMU, then uploads the serial logs. The ISO is BIOS/Legacy boot only; UEFI mode is not supported by this boot menu.
+The worker is an ordinary user-mode process named CubeAntivirus.HoneyPot.exe. It writes a heartbeat to the local log and can be ended in Windows Task Manager. It has no hidden startup, persistence, self-restart or process protection. Windows and other authorized tools can also end it; termination cannot technically be restricted to Task Manager alone.
 
-KolibriOS is included as a separate boot-menu option; its kernel is not used as the Nnoobos kernel. The two operating systems have different kernel and boot requirements.
+FileSystemWatcher detects filesystem changes, not reads, and cannot reliably identify which process caused a change.
 
-## Current experimental x86-64 boot path
+## Important
+This is a local defensive utility, not a replacement for Microsoft Defender or a commercial antivirus engine. The signature set is empty unless trusted signatures are added. Heuristic matches can be false positives. Process command-line indicators are advisory. The scanner does not modify scanned files, and quarantine never moves or deletes originals.
 
-- BIOS boot sector loads the second stage.
-- Stage 2 reads the kernel from floppy sectors 10–18, builds initial identity-mapped page tables, enables PAE/paging and enters x86-64 long mode.
-- The 64-bit kernel writes a status screen directly to VGA text memory and emits boot diagnostics on COM1 for automated emulator testing.
-- A first NEX64 executable-header validator is included as groundwork for a future native program loader.
-
-This is an early kernel milestone, not a general-purpose operating system. The current boot path replaces the old text desktop shell. The legacy shell code is not part of this new boot path until a proper 64-bit userspace/window system exists.
-
-## Executable support status
-
-Nnoobos does **not** yet run Windows `.exe` files, DOS MZ programs, or complete NEX64 programs from disk. The kernel currently validates a 24-byte NEX64 header only when it is already in memory. A filesystem, full image loader, memory manager, process model and system-call boundary are still required. See [NEX64 and x86-64 kernel notes](docs/X86_64_AND_NEX64.md) and [Executable and Firefox roadmap](docs/EXECUTABLES_AND_FIREFOX.md).
-
-## Current limits
-
-- BIOS/CHS loader with a fixed 9-sector kernel read.
-- Initial page tables identity-map only the first 2 MiB.
-- VGA text mode only; no filesystem, network, GUI, mouse or Firefox.
-- NEX64 validation is a first step, not full executable support.
-
-## Roadmap
-
-- IDT, exception handlers and serial diagnostics
-- Physical and virtual memory management
-- Filesystem and disk file reads
-- Complete NEX64 loader and controlled execution model
-- Process isolation and system calls
-- Separate DOS MZ compatibility research; Windows PE compatibility is a long-term project
-- Network stack and a browser after kernel services exist
-
-Test only in an emulator with disposable disk images. Do not write the experimental image to a real disk.
+## Build
+Install the .NET 10 SDK on Windows. Run dotnet restore/build/publish for CubeAntivirus/CubeAntivirus.csproj. After publish, copy CubeAntivirus.exe to CubeAntivirus.HoneyPot.exe in the publish folder; the installer includes both executables.

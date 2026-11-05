@@ -1,5 +1,5 @@
 #define MyAppName "Cube Antivirus"
-#define MyAppVersion "1.3.0"
+#define MyAppVersion "1.4.0"
 #define MyAppPublisher "Cube Antivirus"
 
 [Setup]
@@ -22,14 +22,16 @@ RestartApplications=no
 
 [Files]
 Source: "..\artifacts\CubeAntivirus\CubeAntivirus.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifacts\CubeAntivirus\CubeAntivirus.CLI.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\artifacts\CubeAntivirus\CubeAntivirus.HoneyPot.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Cube Antivirus"; Filename: "{app}\CubeAntivirus.exe"
+Name: "{group}\Cube Antivirus — графічна версія"; Filename: "{app}\CubeAntivirus.exe"
+Name: "{group}\Cube Antivirus — консоль"; Filename: "{app}\CubeAntivirus.CLI.exe"; Parameters: "help"
 Name: "{autodesktop}\Cube Antivirus"; Filename: "{app}\CubeAntivirus.exe"; Tasks: desktopicon
 
 [Tasks]
-Name: "desktopicon"; Description: "Створити ярлик на робочому столі"; GroupDescription: "Додаткові параметри:"; Flags: unchecked
+Name: "desktopicon"; Description: "Створити ярлик графічної версії на робочому столі"; GroupDescription: "Додаткові параметри:"; Flags: unchecked
 
 [Run]
 Filename: "{app}\CubeAntivirus.exe"; Description: "Запустити Cube Antivirus"; Flags: postinstall nowait skipifsilent

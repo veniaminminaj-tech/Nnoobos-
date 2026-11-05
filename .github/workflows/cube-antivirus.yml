@@ -23,38 +23,40 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Restore
+      - name: Restore GUI
         run: dotnet restore CubeAntivirus/CubeAntivirus.csproj
-      - name: Build
+      - name: Build GUI
         run: dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release --no-restore
-      - name: Publish self-contained EXE
+      - name: Publish GUI
         run: dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
-      - name: Create HoneyPot worker executable
+      - name: Publish console edition
+        run: dotnet publish CubeAntivirus.CLI/CubeAntivirus.CLI.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
+      - name: Package visible HoneyPot worker
         shell: pwsh
         run: Copy-Item artifacts/CubeAntivirus/CubeAntivirus.exe artifacts/CubeAntivirus/CubeAntivirus.HoneyPot.exe
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
-      - name: Build Windows installer
+      - name: Build all-in-one Windows installer
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/installer | Out-Null
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "CubeAntivirus\installer.iss"
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
-      - name: Upload portable EXE
+      - name: Upload all-in-one installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: CubeAntivirus-All-in-One-Setup-x64
+          path: artifacts/installer/CubeAntivirus-Setup-x64.exe
+          if-no-files-found: error
+      - name: Upload portable GUI
         uses: actions/upload-artifact@v4
         with:
           name: CubeAntivirus-portable-win-x64
           path: artifacts/CubeAntivirus/CubeAntivirus.exe
           if-no-files-found: error
-      - name: Upload HoneyPot worker
+      - name: Upload portable console
         uses: actions/upload-artifact@v4
         with:
-          name: CubeAntivirus-HoneyPot-worker-win-x64
-          path: artifacts/CubeAntivirus/CubeAntivirus.HoneyPot.exe
-          if-no-files-found: error
-      - name: Upload installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: CubeAntivirus-Setup-x64
-          path: artifacts/installer/CubeAntivirus-Setup-x64.exe
+          name: CubeAntivirus-CLI-portable-win-x64
+          path: artifacts/CubeAntivirus/CubeAntivirus.CLI.exe
           if-no-files-found: error

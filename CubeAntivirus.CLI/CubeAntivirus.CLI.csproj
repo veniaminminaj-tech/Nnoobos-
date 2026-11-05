@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>CubeAntivirus.CLI</AssemblyName>
+    <RootNamespace>CubeAntivirus.CLI</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <Version>1.4.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="10.0.0" />
+    <Compile Include="../CubeAntivirus/Core/FileScanner.cs" Link="Core/FileScanner.cs" />
+    <Compile Include="../CubeAntivirus/Core/HashDatabase.cs" Link="Core/HashDatabase.cs" />
+    <Compile Include="../CubeAntivirus/Models/ScanResult.cs" Link="Models/ScanResult.cs" />
+    <Compile Include="../CubeAntivirus/Modules/ProcessManager.cs" Link="Modules/ProcessManager.cs" />
+  </ItemGroup>
+</Project>

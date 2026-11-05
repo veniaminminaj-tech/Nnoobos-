@@ -1,25 +1,24 @@
-# Cube Antivirus 1.3.0
+# Cube Antivirus 1.4.0
 
-Windows x64 WPF defensive utility targeting .NET 10.
+Windows x64 defensive utility with one all-in-one installer.
 
-## Features
-- Recursive read-only file scan with SHA-256 and heuristic warnings.
-- Copy-only quarantine with hash verification and restore protection.
-- Read-only process inventory and advisory command-line indicators.
-- Synthetic HoneyPot files in a dedicated local folder, optionally mapped as a temporary drive using Windows SUBST.
-- HoneyPot filesystem change logging (created, changed, renamed, deleted).
-- Optional visible HoneyPot worker process for Task Manager exit-detection tests.
-- Local event log, portable self-contained EXE and Inno Setup installer.
+## Included in the installer
+- **GUI:** CubeAntivirus.exe — WPF desktop interface with scanner, process inventory, quarantine, activity log and HoneyPot controls.
+- **Console:** CubeAntivirus.CLI.exe — command-line scanner and read-only process inventory.
+- **HoneyPot worker:** CubeAntivirus.HoneyPot.exe — visible test worker launched by the GUI HoneyPot tab.
 
-## HoneyPot details and limitations
-The virtual drive is a SUBST mapping to the local folder %LOCALAPPDATA%\CubeAntivirus\HoneyPotDisk. It is not a separate partition or physical disk and contains synthetic placeholders only. The mapping is temporary and can be detached in the HoneyPot tab.
+## Console commands
+Open Command Prompt in the installation folder (usually `C:\Program Files\Cube Antivirus`):
+- `CubeAntivirus.CLI.exe help`
+- `CubeAntivirus.CLI.exe scan "C:\Path\To\Folder"`
+- `CubeAntivirus.CLI.exe processes`
 
-The worker is an ordinary user-mode process named CubeAntivirus.HoneyPot.exe. It writes a heartbeat to the local log and can be ended in Windows Task Manager. It has no hidden startup, persistence, self-restart or process protection. Windows and other authorized tools can also end it; termination cannot technically be restricted to Task Manager alone.
+The scanner is read-only. It calculates SHA-256 and checks the currently configured signature set plus simple script heuristics. A warning is not proof of malware. Process labels are advisory and no process is terminated.
 
-FileSystemWatcher detects filesystem changes, not reads, and cannot reliably identify which process caused a change.
+## HoneyPot
+The HoneyPot creates synthetic decoy files in `%LOCALAPPDATA%\CubeAntivirus\HoneyPotDisk` and can map that folder as a temporary SUBST drive. It is not a physical disk or partition. FileSystemWatcher records filesystem changes but cannot detect reads or reliably identify the process responsible.
 
-## Important
-This is a local defensive utility, not a replacement for Microsoft Defender or a commercial antivirus engine. The signature set is empty unless trusted signatures are added. Heuristic matches can be false positives. Process command-line indicators are advisory. The scanner does not modify scanned files, and quarantine never moves or deletes originals.
+The worker is an ordinary user-mode process. It has no hidden startup, persistence, self-restart or tamper protection. It can be ended through Task Manager or other authorized tools.
 
-## Build
-Install the .NET 10 SDK on Windows. Run dotnet restore/build/publish for CubeAntivirus/CubeAntivirus.csproj. After publish, copy CubeAntivirus.exe to CubeAntivirus.HoneyPot.exe in the publish folder; the installer includes both executables.
+## Safety and limitations
+This is not a replacement for Microsoft Defender or a commercial antivirus engine. The default signature database is empty unless trusted signatures are added. Heuristic matches can be false positives. The scanner does not alter scanned files; quarantine stores and verifies a copy and leaves the original untouched.
