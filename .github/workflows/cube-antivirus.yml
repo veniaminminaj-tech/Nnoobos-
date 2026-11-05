@@ -3,10 +3,28 @@ name: Cube Antivirus build
 on:
   push:
     paths:
+      - 'Core/**'
+      - 'Models/**'
+      - 'Modules/**'
+      - 'CubeAntivirus.CLI/**'
+      - 'CubeAntivirus.csproj'
+      - 'MainWindow.xaml'
+      - 'MainWindow.xaml.cs'
+      - 'App.xaml'
+      - 'App.xaml.cs'
       - 'CubeAntivirus/**'
       - '.github/workflows/cube-antivirus.yml'
   pull_request:
     paths:
+      - 'Core/**'
+      - 'Models/**'
+      - 'Modules/**'
+      - 'CubeAntivirus.CLI/**'
+      - 'CubeAntivirus.csproj'
+      - 'MainWindow.xaml'
+      - 'MainWindow.xaml.cs'
+      - 'App.xaml'
+      - 'App.xaml.cs'
       - 'CubeAntivirus/**'
       - '.github/workflows/cube-antivirus.yml'
   workflow_dispatch:
@@ -24,11 +42,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Restore GUI
-        run: dotnet restore CubeAntivirus/CubeAntivirus.csproj
+        run: dotnet restore CubeAntivirus.csproj
       - name: Build GUI
-        run: dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release --no-restore
+        run: dotnet build CubeAntivirus.csproj -c Release --no-restore
       - name: Publish GUI
-        run: dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
+        run: dotnet publish CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
+      - name: Restore console
+        run: dotnet restore CubeAntivirus.CLI/CubeAntivirus.CLI.csproj
       - name: Publish console edition
         run: dotnet publish CubeAntivirus.CLI/CubeAntivirus.CLI.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
       - name: Package visible HoneyPot worker

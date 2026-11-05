@@ -1,5 +1,5 @@
 #define MyAppName "Cube Antivirus"
-#define MyAppVersion "1.4.0"
+#define MyAppVersion "1.5.0"
 #define MyAppPublisher "Cube Antivirus"
 
 [Setup]
