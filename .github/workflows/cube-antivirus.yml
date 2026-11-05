@@ -1,10 +1,15 @@
 name: Cube Antivirus build
 on:
   push:
-    paths: ['CubeAntivirus/**', '.github/workflows/cube-antivirus.yml']
+    paths:
+      - 'CubeAntivirus/**'
+      - '.github/workflows/cube-antivirus.yml'
   pull_request:
-    paths: ['CubeAntivirus/**', '.github/workflows/cube-antivirus.yml']
+    paths:
+      - 'CubeAntivirus/**'
+      - '.github/workflows/cube-antivirus.yml'
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-latest
@@ -13,12 +18,27 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - run: dotnet restore CubeAntivirus/CubeAntivirus.csproj
-      - run: dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release --no-restore
-      - run: dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o artifacts/CubeAntivirus
-      - uses: actions/upload-artifact@v4
+      - name: Restore
+        run: dotnet restore CubeAntivirus/CubeAntivirus.csproj
+      - name: Build
+        run: dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release --no-restore
+      - name: Publish self-contained EXE
+        run: dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/installer | Out-Null
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "CubeAntivirus\installer.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
+      - name: Upload portable EXE
+        uses: actions/upload-artifact@v4
         with:
-          name: CubeAntivirus-win-x64
-          path: artifacts/CubeAntivirus/
-
-# Rebuild after source fixes.
+          name: CubeAntivirus-portable-win-x64
+          path: artifacts/CubeAntivirus/CubeAntivirus.exe
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: CubeAntivirus-Setup-x64
+          path: artifacts/installer/CubeAntivirus-Setup-x64.exe
