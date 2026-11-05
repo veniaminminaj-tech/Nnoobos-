@@ -20,3 +20,5 @@ jobs:
         with:
           name: CubeAntivirus-win-x64
           path: artifacts/CubeAntivirus/
+
+# Rebuild after source fixes.
