@@ -29,7 +29,7 @@ void Help()
     Console.WriteLine("All scanning is read-only. A certificate being present does not mean it is trusted.");
 }
 
-static string Csv(string? value) => """ + (value ?? "").Replace(""", """") + """;
+static string Csv(string? value) => "\\\"" + (value ?? "").Replace("\\\"", "\\\"\\\"") + "\\\"";
 static async Task SaveTextAsync(string path, string content) =>
     await File.WriteAllTextAsync(Path.GetFullPath(path), content, new UTF8Encoding(false));
 
