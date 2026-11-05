@@ -1,9 +1,33 @@
-# Cube Antivirus
+# Cube Antivirus 1.1.0
 
-WPF security diagnostics starter for Windows, targeting .NET 8.
+A Windows x64 WPF security diagnostics application targeting **.NET 10 LTS**.
 
-Included: recursive SHA-256 scanner, script heuristic warnings, copy-based quarantine, process inventory, local HoneyPot decoys and event logging, asynchronous CMD terminal, administrator manifest.
+## Included
+- Recursive, read-only file scanning with SHA-256 signatures.
+- Script heuristic indicators for review (heuristics are not proof of malware).
+- Thread-safe in-memory hash database.
+- Copy-only quarantine: original files remain in place.
+- Read-only process inventory with optional WMI command-line and executable-path data.
+- Advisory mining-pool command-line indicators; detections never terminate processes.
+- Local HoneyPot decoy files with change-event logging.
+- Asynchronous CMD execution with cancellation of the command started by the app.
+- Administrator manifest and self-contained Windows x64 installer workflow.
 
-Safety: this project does not freeze keyboard/mouse input, kill unrelated processes, install hidden watchdogs, impersonate system executables, or silently modify files. HoneyPot activity is logged for review. Quarantine copies files and leaves originals intact. The signature database starts empty; add only verified SHA-256 indicators.
+## Safety and limitations
+- No keyboard/mouse lock, hidden watchdog, process impersonation, or indiscriminate process termination.
+- The HoneyPot watcher reports file-system change events; it cannot reliably detect file reads.
+- The SHA-256 database is empty by default. Add only verified hashes from trusted sources.
+- Heuristic matches are warnings for manual review, not definitive malware verdicts.
+- Quarantine copies files and never deletes or moves the original.
+- Process command lines may be unavailable when Windows denies WMI access; the UI falls back to basic process inventory.
 
-Build with Visual Studio 2022 and the .NET 8 desktop workload, or run dotnet restore/build on CubeAntivirus.csproj.
+## Build
+Install the .NET 10 SDK and the Windows Desktop workload, then run:
+
+```powershell
+dotnet restore CubeAntivirus/CubeAntivirus.csproj
+dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release
+dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
+```
+
+GitHub Actions also builds a self-contained EXE and an Inno Setup installer on pushes affecting `CubeAntivirus/**`.
