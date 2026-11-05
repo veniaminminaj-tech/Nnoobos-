@@ -1,6 +1,6 @@
+using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
+using Microsoft.Win32;
 using CubeAntivirus.Core;
 using CubeAntivirus.Models;
 using CubeAntivirus.Modules;
@@ -10,39 +10,60 @@ namespace CubeAntivirus;
 public partial class MainWindow : Window
 {
     private readonly FileScanner _scanner = new(new HashDatabase());
-    private readonly TerminalManager _terminal = new();
     private readonly ThreatLogger _logger = new();
     private readonly HoneyPotManager _honeyPot = new();
+    private readonly QuarantineManager _quarantine = new();
+    private readonly ObservableCollection<ScanResult> _results = new();
+    private readonly ObservableCollection<ProcessEntry> _processes = new();
+    private readonly ObservableCollection<QuarantineRecord> _quarantineItems = new();
     private CancellationTokenSource? _scanCts;
+    private int _scanned, _threats, _warnings;
 
     public MainWindow()
     {
         InitializeComponent();
-        TerminalOutput.Text = "Cube Antivirus 1.1.0 initialized.\n.NET 10 · Ready.\n";
-
-        _honeyPot.ActivityDetected += async (_, message) =>
+        ResultsGrid.ItemsSource = _results;
+        ProcessesGrid.ItemsSource = _processes;
+        QuarantineGrid.ItemsSource = _quarantineItems;
+        PathBox.Text = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        _honeyPot.ActivityDetected += HoneyPot_ActivityDetected;
+        Loaded += async (_, _) =>
         {
-            await _logger.WriteAsync("HoneyPot: " + message);
-            await Dispatcher.InvokeAsync(() =>
-                ResultsList.Items.Insert(0,
-                    MakeResult("HONEYPOT", message, ScanStatus.Warning)));
+            await RefreshQuarantineAsync();
+            await ReloadLogAsync();
+            await _logger.WriteAsync("Cube Antivirus started.");
         };
-
         Closed += (_, _) =>
         {
             _scanCts?.Cancel();
             _scanCts?.Dispose();
+            _honeyPot.ActivityDetected -= HoneyPot_ActivityDetected;
             _honeyPot.Dispose();
         };
+    }
+
+    private async void HoneyPot_ActivityDetected(object? sender, string message)
+    {
+        await _logger.WriteAsync("HoneyPot activity: " + message);
+        await Dispatcher.InvokeAsync(() =>
+        {
+            ActivityLog.AppendText($"[{DateTimeOffset.Now:O}] HONEYPOT: {message}{Environment.NewLine}");
+            ActivityLog.ScrollToEnd();
+        });
+    }
+
+    private void Browse_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Choose a folder to scan" };
+        if (dialog.ShowDialog(this) == true) PathBox.Text = dialog.FolderName;
     }
 
     private async void Scan_Click(object sender, RoutedEventArgs e)
     {
         var root = PathBox.Text.Trim();
-
         if (!Directory.Exists(root))
         {
-            MessageBox.Show("Folder does not exist.", "Cube Antivirus",
+            MessageBox.Show("The selected folder does not exist.", "Cube Antivirus",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
@@ -50,98 +71,133 @@ public partial class MainWindow : Window
         _scanCts?.Cancel();
         _scanCts?.Dispose();
         _scanCts = new CancellationTokenSource();
-        ResultsList.Items.Clear();
+        var token = _scanCts.Token;
+        _results.Clear();
+        _scanned = _threats = _warnings = 0;
+        UpdateCounters();
+        CancelScanButton.IsEnabled = true;
+        ScanStatusText.Text = "Scanning…";
 
         try
         {
-            await foreach (var result in _scanner.ScanDirectoryAsync(root, _scanCts.Token))
+            await foreach (var result in _scanner.ScanDirectoryAsync(root, token))
             {
-                ResultsList.Items.Add(MakeResult(
-                    result.Status.ToString().ToUpperInvariant(),
-                    result.Path + " — " + result.Details,
-                    result.Status));
-
-                await _logger.WriteAsync(
-                    $"{result.Status}: {result.Path} — {result.Details}",
-                    _scanCts.Token);
+                _results.Add(result);
+                _scanned++;
+                if (result.Status == ScanStatus.Threat) _threats++;
+                if (result.Status == ScanStatus.Warning) _warnings++;
+                UpdateCounters();
+                ScanStatusText.Text = $"Scanned {_scanned:N0} items…";
+                await _logger.WriteAsync($"{result.Status}: {result.Path} — {result.Details}", token);
             }
+            ScanStatusText.Text = $"Scan complete. {_scanned:N0} items checked.";
+            await _logger.WriteAsync($"Scan completed: {_scanned} items, {_threats} threats, {_warnings} warnings.");
         }
         catch (OperationCanceledException)
         {
-            ResultsList.Items.Insert(0,
-                MakeResult("CANCELLED", "Scan was cancelled.", ScanStatus.Warning));
+            ScanStatusText.Text = $"Scan cancelled after {_scanned:N0} items.";
+            await _logger.WriteAsync(ScanStatusText.Text);
         }
         catch (Exception ex)
         {
-            ResultsList.Items.Insert(0,
-                MakeResult("ERROR", ex.Message, ScanStatus.Error));
+            ScanStatusText.Text = "Scan failed: " + ex.Message;
+            await _logger.WriteAsync("Scan error: " + ex);
+        }
+        finally
+        {
+            CancelScanButton.IsEnabled = false;
         }
     }
 
-    private static System.Windows.Controls.ListBoxItem MakeResult(
-        string title, string details, ScanStatus status)
-    {
-        var color = status switch
-        {
-            ScanStatus.Clean => Colors.LightGreen,
-            ScanStatus.Threat => Colors.IndianRed,
-            ScanStatus.Warning => Colors.Orange,
-            _ => Colors.LightGray
-        };
+    private void CancelScan_Click(object sender, RoutedEventArgs e) => _scanCts?.Cancel();
 
-        return new System.Windows.Controls.ListBoxItem
+    private void UpdateCounters()
+    {
+        ScannedCount.Text = _scanned.ToString("N0");
+        ThreatCount.Text = _threats.ToString("N0");
+        WarningCount.Text = _warnings.ToString("N0");
+    }
+
+    private async void QuarantineSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (ResultsGrid.SelectedItem is not ScanResult selected ||
+            selected.Status is not (ScanStatus.Threat or ScanStatus.Warning))
         {
-            Content = title + "  " + details,
-            Foreground = new SolidColorBrush(color),
-            Padding = new Thickness(6)
-        };
+            MessageBox.Show("Select a file marked Threat or Warning first.", "Cube Antivirus",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            $"Create an isolated copy of this file? The original will remain unchanged.\n\n{selected.Path}",
+            "Confirm quarantine", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var stored = await _quarantine.CopyToQuarantineAsync(selected.Path);
+            await _logger.WriteAsync($"Quarantined copy created: {selected.Path} -> {stored}");
+            await RefreshQuarantineAsync();
+            MessageBox.Show("An isolated copy was created. The original file was not changed.",
+                "Cube Antivirus", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Quarantine failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void Processes_Click(object sender, RoutedEventArgs e)
     {
-        ResultsList.Items.Clear();
+        _processes.Clear();
+        foreach (var process in ProcessManager.GetProcesses()) _processes.Add(process);
+    }
 
-        foreach (var process in ProcessManager.GetProcesses())
+    private async void RefreshQuarantine_Click(object sender, RoutedEventArgs e) => await RefreshQuarantineAsync();
+
+    private async Task RefreshQuarantineAsync()
+    {
+        _quarantineItems.Clear();
+        foreach (var item in await _quarantine.GetItemsAsync()) _quarantineItems.Add(item);
+        QuarantineCount.Text = _quarantineItems.Count.ToString("N0");
+    }
+
+    private async void RestoreSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (QuarantineGrid.SelectedItem is not QuarantineRecord item)
         {
-            var details = $"PID {process.Pid} · {process.Status}";
-            if (!string.IsNullOrWhiteSpace(process.ExecutablePath))
-                details += $" · {process.ExecutablePath}";
-
-            ResultsList.Items.Add(MakeResult(
-                process.IsMiner ? "REVIEW PROCESS" : "PROCESS",
-                $"{process.Name} · {details}",
-                process.IsMiner ? ScanStatus.Warning : ScanStatus.Clean));
-        }
-    }
-
-    private async void RunCommand_Click(object sender, RoutedEventArgs e) =>
-        await RunCommandAsync();
-
-    private async void CommandBox_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Enter)
-            await RunCommandAsync();
-    }
-
-    private async Task RunCommandAsync()
-    {
-        var command = CommandBox.Text.Trim();
-        if (command.Length == 0)
+            MessageBox.Show("Select a quarantine entry first.", "Cube Antivirus",
+                MessageBoxButton.OK, MessageBoxImage.Information);
             return;
+        }
 
-        CommandBox.Clear();
-        TerminalOutput.AppendText($"> {command}\n");
+        var dialog = new SaveFileDialog
+        {
+            Title = "Restore quarantined copy",
+            FileName = Path.GetFileName(item.OriginalPath),
+            Filter = "All files|*.*",
+            OverwritePrompt = true
+        };
+        if (dialog.ShowDialog(this) != true) return;
 
         try
         {
-            var output = await _terminal.ExecuteAsync(command);
-            TerminalOutput.AppendText(output + Environment.NewLine);
+            await _quarantine.RestoreCopyAsync(item, dialog.FileName);
+            await _logger.WriteAsync($"Restored copy: {item.Id} -> {dialog.FileName}");
+            MessageBox.Show("The file was restored as a copy. The quarantine entry remains available.",
+                "Cube Antivirus", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            TerminalOutput.AppendText("ERROR: " + ex.Message + Environment.NewLine);
+            MessageBox.Show(ex.Message, "Restore failed", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
 
-        TerminalOutput.ScrollToEnd();
+    private async void ReloadLog_Click(object sender, RoutedEventArgs e) => await ReloadLogAsync();
+
+    private async Task ReloadLogAsync()
+    {
+        ActivityLog.Text = await _logger.ReadAllAsync();
+        ActivityLog.ScrollToEnd();
     }
 }

@@ -1,1 +1,97 @@
-<Window x:Class="CubeAntivirus.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Cube Antivirus" Height="720" Width="1120" MinHeight="600" MinWidth="900" Background="#0D1520" Foreground="#E8F0F8" WindowStartupLocation="CenterScreen"><Grid Margin="18"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><DockPanel Margin="0,0,0,16"><StackPanel><TextBlock Text="CUBE ANTIVIRUS" FontSize="25" FontWeight="Bold" Foreground="#38D996"/><TextBlock Text=".NET 8 · Security &amp; System Diagnostics" Foreground="#91A4B8"/></StackPanel><TextBlock DockPanel.Dock="Right" Text="● PROTECTION READY" Foreground="#38D996" VerticalAlignment="Center" FontWeight="SemiBold"/></DockPanel><Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions><Border Background="#172231" CornerRadius="12" Padding="14" Margin="0,0,10,0"><DockPanel><StackPanel DockPanel.Dock="Top"><TextBlock Text="File scanner" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/><TextBox x:Name="PathBox" Text="C:\Users" Padding="9" Background="#0D1520" Foreground="White"/><WrapPanel Margin="0,8,0,12"><Button Content="Scan folder" Click="Scan_Click" Padding="14,8" Margin="0,0,8,0"/><Button Content="Refresh processes" Click="Processes_Click" Padding="14,8"/></WrapPanel></StackPanel><ListBox x:Name="ResultsList" Background="#101A28" BorderThickness="0" Foreground="White"/></DockPanel></Border><Border Grid.Column="1" Background="#172231" CornerRadius="12" Padding="14" Margin="10,0,0,0"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><TextBlock Text="Cube Terminal" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/><TextBox x:Name="TerminalOutput" Grid.Row="1" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" Background="#050A0D" Foreground="#38D996" FontFamily="Consolas" Padding="10"/><DockPanel Grid.Row="2" Margin="0,10,0,0"><Button Content="Run" Click="RunCommand_Click" DockPanel.Dock="Right" Padding="16,8" Margin="8,0,0,0"/><TextBox x:Name="CommandBox" Padding="9" Background="#0D1520" Foreground="White" KeyDown="CommandBox_KeyDown"/></DockPanel><TextBlock Grid.Row="3" Text="HoneyPot activity is logged locally. Review detections before taking action." Foreground="#91A4B8" TextWrapping="Wrap" Margin="0,12,0,0"/></Grid></Border></Grid></Grid></Window>
+<Window x:Class="CubeAntivirus.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cube Antivirus" Height="820" Width="1280" MinHeight="680" MinWidth="1000"
+        Background="#0B1220" Foreground="#E5EDF7" WindowStartupLocation="CenterScreen">
+    <Grid Margin="22">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,18">
+            <StackPanel>
+                <TextBlock Text="CUBE ANTIVIRUS" FontSize="27" FontWeight="Bold" Foreground="#43D9A2"/>
+                <TextBlock Text="Windows Security Center · Local protection tools" Foreground="#8FA3BA" Margin="0,3,0,0"/>
+            </StackPanel>
+            <Border DockPanel.Dock="Right" Background="#12372F" CornerRadius="8" Padding="13,8" VerticalAlignment="Center">
+                <TextBlock Text="● PROTECTION DASHBOARD" Foreground="#43D9A2" FontWeight="SemiBold"/>
+            </Border>
+        </DockPanel>
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+            <Border Background="#142236" CornerRadius="9" Padding="14" Margin="0,0,8,0"><StackPanel><TextBlock Text="FILES SCANNED" Foreground="#8FA3BA"/><TextBlock x:Name="ScannedCount" Text="0" FontSize="25" FontWeight="Bold"/></StackPanel></Border>
+            <Border Background="#142236" CornerRadius="9" Padding="14" Margin="4,0"><StackPanel><TextBlock Text="THREATS" Foreground="#8FA3BA"/><TextBlock x:Name="ThreatCount" Text="0" FontSize="25" FontWeight="Bold" Foreground="#FF7272"/></StackPanel></Border>
+            <Border Background="#142236" CornerRadius="9" Padding="14" Margin="4,0"><StackPanel><TextBlock Text="WARNINGS" Foreground="#8FA3BA"/><TextBlock x:Name="WarningCount" Text="0" FontSize="25" FontWeight="Bold" Foreground="#FFC46B"/></StackPanel></Border>
+            <Border Background="#142236" CornerRadius="9" Padding="14" Margin="8,0,0,0"><StackPanel><TextBlock Text="QUARANTINED" Foreground="#8FA3BA"/><TextBlock x:Name="QuarantineCount" Text="0" FontSize="25" FontWeight="Bold" Foreground="#43D9A2"/></StackPanel></Border>
+        </UniformGrid>
+        <TabControl Grid.Row="2" Background="#101B2B" BorderBrush="#26364B" Foreground="#E5EDF7">
+            <TabItem Header="Scanner">
+                <Grid Margin="14">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Text="Recursive file scan · read-only analysis" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <DockPanel Grid.Row="1" Margin="0,0,0,12">
+                        <Button x:Name="CancelScanButton" Content="Cancel scan" Click="CancelScan_Click" IsEnabled="False" Padding="14,8" DockPanel.Dock="Right" Margin="8,0,0,0"/>
+                        <Button Content="Browse…" Click="Browse_Click" Padding="14,8" DockPanel.Dock="Right" Margin="8,0,0,0"/>
+                        <Button Content="Start scan" Click="Scan_Click" Padding="16,8" DockPanel.Dock="Right"/>
+                        <TextBox x:Name="PathBox" Text="{Binding DefaultScanPath}" Padding="9" Background="#0B1220" Foreground="White" VerticalContentAlignment="Center"/>
+                    </DockPanel>
+                    <DataGrid x:Name="ResultsGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                              Background="#0B1220" Foreground="#E5EDF7" RowBackground="#122033" AlternatingRowBackground="#17283D"
+                              BorderBrush="#26364B" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
+                            <DataGridTextColumn Header="File" Binding="{Binding Path}" Width="2*"/>
+                            <DataGridTextColumn Header="Details" Binding="{Binding Details}" Width="2*"/>
+                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="220"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DockPanel Grid.Row="3" Margin="0,12,0,0">
+                        <TextBlock x:Name="ScanStatusText" Text="Ready. Choose a folder to scan." Foreground="#91A4B8" VerticalAlignment="Center"/>
+                        <Button Content="Copy selected to quarantine" Click="QuarantineSelected_Click" DockPanel.Dock="Right" Padding="14,8"/>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Processes">
+                <DockPanel Margin="14">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Running processes · advisory indicators only" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button Content="Refresh" Click="Processes_Click" Padding="14,7" Margin="18,0,0,0"/>
+                    </StackPanel>
+                    <DataGrid x:Name="ProcessesGrid" AutoGenerateColumns="False" IsReadOnly="True" Background="#0B1220"
+                              Foreground="#E5EDF7" RowBackground="#122033" AlternatingRowBackground="#17283D" BorderBrush="#26364B">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Process" Binding="{Binding Name}" Width="160"/>
+                            <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="80"/>
+                            <DataGridTextColumn Header="Assessment" Binding="{Binding Status}" Width="220"/>
+                            <DataGridTextColumn Header="Executable path" Binding="{Binding ExecutablePath}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Quarantine">
+                <DockPanel Margin="14">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Isolated copies · originals are not moved or deleted" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button Content="Refresh" Click="RefreshQuarantine_Click" Padding="14,7" Margin="18,0,0,0"/>
+                        <Button Content="Restore selected…" Click="RestoreSelected_Click" Padding="14,7" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <DataGrid x:Name="QuarantineGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                              Background="#0B1220" Foreground="#E5EDF7" RowBackground="#122033" AlternatingRowBackground="#17283D" BorderBrush="#26364B">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Added" Binding="{Binding AddedAt}" Width="190"/>
+                            <DataGridTextColumn Header="Original file" Binding="{Binding OriginalPath}" Width="*"/>
+                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="250"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Activity">
+                <DockPanel Margin="14">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Local security event history" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button Content="Reload log" Click="ReloadLog_Click" Padding="14,7" Margin="18,0,0,0"/>
+                    </StackPanel>
+                    <TextBox x:Name="ActivityLog" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Background="#050A10" Foreground="#43D9A2"
+                             FontFamily="Consolas" Padding="12"/>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

@@ -1,28 +1,25 @@
-# Cube Antivirus 1.1.0
+# Cube Antivirus 1.2.0
 
-A Windows x64 WPF security diagnostics application targeting **.NET 10 LTS**.
+Cube Antivirus is a Windows x64 WPF security utility targeting .NET 10 LTS.
 
-## Included
-- Recursive, read-only file scanning with SHA-256 signatures.
-- Script heuristic indicators for review (heuristics are not proof of malware).
-- Thread-safe in-memory hash database.
-- Copy-only quarantine: original files remain in place.
-- Read-only process inventory with optional WMI command-line and executable-path data.
-- Advisory mining-pool command-line indicators; detections never terminate processes.
-- Local HoneyPot decoy files with change-event logging.
-- Asynchronous CMD execution with cancellation of the command started by the app.
-- Administrator manifest and self-contained Windows x64 installer workflow.
+## Features
+- Dashboard counters for scanned files, detections, warnings and quarantine entries.
+- Recursive asynchronous file scanning with SHA-256 calculation.
+- Heuristic script indicators are reported as warnings, not definitive malware verdicts.
+- Quarantine creates a separate copy, verifies its SHA-256, and records metadata.
+- Restore verifies the quarantined copy and refuses to overwrite an existing destination.
+- Read-only process inventory with optional WMI command-line indicators.
+- Local synthetic HoneyPot files with filesystem change-event logging.
+- Local activity log with reload support.
+- Self-contained Windows x64 executable and Inno Setup installer through GitHub Actions.
 
-## Safety and limitations
-- No keyboard/mouse lock, hidden watchdog, process impersonation, or indiscriminate process termination.
-- The HoneyPot watcher reports file-system change events; it cannot reliably detect file reads.
-- The SHA-256 database is empty by default. Add only verified hashes from trusted sources.
-- Heuristic matches are warnings for manual review, not definitive malware verdicts.
-- Quarantine copies files and never deletes or moves the original.
-- Process command lines may be unavailable when Windows denies WMI access; the UI falls back to basic process inventory.
+## Important limitations
+This is a local defensive utility, not a replacement for Microsoft Defender or a commercial antivirus engine. Its SHA-256 signature set is empty unless verified signatures are added from trusted sources. Heuristic matches can be false positives. Process command-line indicators are advisory. The HoneyPot watcher detects filesystem changes, not reads, and cannot reliably identify the responsible process.
+
+The scanner does not modify scanned files. Quarantine does not move or delete originals. Restored files are copied out only after hash verification. No global input lock, hidden persistence, automatic process termination, or automatic system configuration changes are implemented.
 
 ## Build
-Install the .NET 10 SDK and the Windows Desktop workload, then run:
+Install the .NET 10 SDK on Windows:
 
 ```powershell
 dotnet restore CubeAntivirus/CubeAntivirus.csproj
@@ -30,4 +27,4 @@ dotnet build CubeAntivirus/CubeAntivirus.csproj -c Release
 dotnet publish CubeAntivirus/CubeAntivirus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/CubeAntivirus
 ```
 
-GitHub Actions also builds a self-contained EXE and an Inno Setup installer on pushes affecting `CubeAntivirus/**`.
+GitHub Actions builds a portable EXE and a Windows installer on pushes affecting `CubeAntivirus/**`.
