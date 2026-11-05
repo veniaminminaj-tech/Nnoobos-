@@ -9,7 +9,7 @@ AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\Cube Antivirus
 DefaultGroupName=Cube Antivirus
-OutputDir=..\..\artifacts\installer
+OutputDir=..\artifacts\installer
 OutputBaseFilename=CubeAntivirus-Setup-x64
 ArchitecturesInstallIn64BitMode=x64
 PrivilegesRequired=admin
@@ -21,7 +21,7 @@ CloseApplications=yes
 RestartApplications=no
 
 [Files]
-Source: "..\..\artifacts\CubeAntivirus\CubeAntivirus.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifacts\CubeAntivirus\CubeAntivirus.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Cube Antivirus"; Filename: "{app}\CubeAntivirus.exe"
