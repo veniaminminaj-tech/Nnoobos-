@@ -36,6 +36,15 @@ static async Task SaveTextAsync(string path, string content) =>
 if (args.Length == 0 || args[0] is "help" or "--help" or "-h" or "/?")
 {
     Help();
+    Console.WriteLine();
+    Console.WriteLine("Tip: run this program from Terminal with a command, for example:");
+    Console.WriteLine('"' + Environment.ProcessPath + '"' + " scan \"C:\\Users\\Public\"");
+    Console.WriteLine();
+    if (!Console.IsInputRedirected)
+    {
+        Console.Write("Press any key to close...");
+        try { Console.ReadKey(intercept: true); } catch { }
+    }
     return;
 }
 
