@@ -1,4 +1,4 @@
-name: Build KolibriX bootable ISO
+name: Build KolibriX OS ISO
 
 on:
   push:
@@ -80,21 +80,17 @@ jobs:
           cat > build/iso/boot/grub/grub.cfg <<'EOF'
           set timeout=4
           set default=0
-          menuentry "Start KolibriX 98" {
+          menuentry "KolibriX" {
               linux16 /boot/memdisk floppy
               initrd16 /kolibrix.img
           }
-          menuentry "KolibriX release information" {
-              cat /README.txt
-              sleep 8
-          }
           EOF
-          grub-mkrescue -o build/KolibriX-0.1.0.iso build/iso
-          test -s build/KolibriX-0.1.0.iso
-          file build/KolibriX-0.1.0.iso
-          size="$(stat -c %s build/KolibriX-0.1.0.iso)"
+          grub-mkrescue -o build/KolibriX-0.2.0.iso build/iso
+          test -s build/KolibriX-0.2.0.iso
+          file build/KolibriX-0.2.0.iso
+          size="$(stat -c %s build/KolibriX-0.2.0.iso)"
           test "$size" -le 5368709120
-          xorriso -indev build/KolibriX-0.1.0.iso -report_el_torito plain 2>&1 | tee build/boot-report.txt
+          xorriso -indev build/KolibriX-0.2.0.iso -report_el_torito plain 2>&1 | tee build/boot-report.txt
           grep -qi 'El Torito' build/boot-report.txt
 
       - name: BIOS boot smoke test in QEMU
@@ -103,7 +99,7 @@ jobs:
           set +e
           timeout 12s qemu-system-i386 \
             -machine pc -accel tcg -m 128M \
-            -cdrom build/KolibriX-0.1.0.iso -boot d \
+            -cdrom build/KolibriX-0.2.0.iso -boot d \
             -display none -monitor none -serial none -no-reboot -no-shutdown
           status=$?
           set -e
@@ -115,10 +111,10 @@ jobs:
       - name: Upload ISO build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: KolibriX-0.1.0-ISO
+          name: KolibriX-0.2.0-ISO
           if-no-files-found: error
           path: |
-            build/KolibriX-0.1.0.iso
+            build/KolibriX-0.2.0.iso
             build/kolibrix.img
             build/KXHELLO.KEX
             build/KXDESK
@@ -141,7 +137,7 @@ jobs:
 
             Persistent desktop folders, Python runtime and Windows PE compatibility remain future milestones.
           files: |
-            build/KolibriX-0.1.0.iso
+            build/KolibriX-0.2.0.iso
             build/KXHELLO.KEX
             build/KXDESK
           prerelease: true
