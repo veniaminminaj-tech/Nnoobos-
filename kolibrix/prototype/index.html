@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KolibriX 98 — Desktop Prototype</title>
+<style>
+:root{--face:#c0c0c0;--dark:#808080;--darker:#404040;--light:#fff;--blue:#000080;--cyan:#008080}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font:12px Tahoma,Verdana,sans-serif;color:#000;overflow:hidden}
+button{font:12px Tahoma,Verdana,sans-serif;color:#000;background:var(--face);border:2px solid;border-color:var(--light) var(--darker) var(--darker) var(--light);padding:4px 9px}
+button:active,.pressed{border-color:var(--darker) var(--light) var(--light) var(--darker);padding:5px 8px 3px 10px}
+#desktop{height:calc(100% - 30px);background:var(--cyan);position:relative;overflow:hidden;padding:10px;color:white}
+.desktop-icon{width:76px;min-height:76px;position:absolute;text-align:center;padding:5px 2px;cursor:default;user-select:none;border:1px solid transparent;text-shadow:1px 1px #000}
+.desktop-icon.selected{background:#00008088;border:1px dotted #fff}
+.desktop-icon .glyph{font-size:30px;display:block;margin-bottom:5px;text-shadow:none}
+.desktop-icon span:last-child{display:block;line-height:15px}
+#taskbar{height:30px;position:absolute;bottom:0;left:0;right:0;background:var(--face);border-top:2px solid var(--light);display:flex;align-items:center;padding:2px 4px;gap:5px;z-index:1000}
+#start{font-weight:bold;font-size:13px;height:24px;display:flex;align-items:center;gap:5px}
+#start b{font-size:17px}
+#taskbuttons{display:flex;gap:4px;flex:1}
+.taskbutton{min-width:130px;text-align:left;height:23px;overflow:hidden;white-space:nowrap}
+#tray{border:2px inset #eee;padding:3px 8px;min-width:66px;text-align:center}
+.window{position:absolute;width:min(520px,calc(100vw - 30px));height:330px;background:var(--face);border:2px solid;border-color:var(--light) var(--darker) var(--darker) var(--light);box-shadow:1px 1px #000;display:flex;flex-direction:column;color:#000;z-index:10}
+.titlebar{height:24px;background:var(--blue);color:#fff;margin:2px 2px 0;padding:3px 4px 2px 7px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;cursor:move;user-select:none}
+.titlebar.inactive{background:#808080}
+.titlebar button{height:18px;width:20px;padding:0;line-height:12px;font-weight:bold}
+.menubar{height:25px;padding:5px 8px;display:flex;gap:18px}
+.window-body{background:#fff;border:2px inset #eee;margin:2px 4px 4px;flex:1;padding:12px;overflow:auto}
+.status{height:20px;border-top:1px solid #888;padding:3px 7px;color:#333}
+.explorer-grid{display:grid;grid-template-columns:repeat(auto-fill,90px);gap:14px}
+.explorer-item{text-align:center;padding:7px;cursor:default}
+.explorer-item:hover{background:#dce8ff;outline:1px dotted #000080}
+.explorer-item .glyph{font-size:28px;display:block}
+#startmenu{position:absolute;bottom:29px;left:4px;width:230px;background:var(--face);border:2px solid;border-color:#fff #404040 #404040 #fff;z-index:1200;display:none;padding:4px;box-shadow:1px 1px #000}
+#startmenu.open{display:block}
+.start-banner{position:absolute;left:5px;top:5px;bottom:5px;width:28px;background:linear-gradient(#000080,#008080);color:white;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:bold;font-size:18px;text-align:left;padding:7px 4px}
+.start-items{margin-left:33px}
+.start-item{padding:8px 8px;display:flex;gap:10px;align-items:center;color:#000;cursor:pointer}
+.start-item:hover{background:#000080;color:white}
+.start-item .glyph{font-size:20px;width:25px;text-align:center}
+.sep{border-top:1px solid #888;border-bottom:1px solid #fff;margin:3px 4px}
+#context{display:none;position:absolute;z-index:1300;background:var(--face);border:2px solid;border-color:#fff #404040 #404040 #fff;min-width:160px;padding:3px;box-shadow:1px 1px #000;color:#000}
+.ctx-item{padding:6px 18px;cursor:pointer}.ctx-item:hover{background:#000080;color:#fff}
+#dialog{position:absolute;z-index:1400;display:none;left:50%;top:45%;transform:translate(-50%,-50%);width:280px;background:var(--face);border:2px solid;border-color:#fff #404040 #404040 #fff;padding:3px;box-shadow:2px 2px #000}
+#dialog .titlebar{margin:0}#dialog .inside{padding:16px}#dialog input{width:100%;margin:8px 0;padding:4px;border:2px inset #eee}#dialog .actions{text-align:right;padding:0 10px 10px}
+#dialog .actions button{min-width:70px;margin-left:5px}
+#hint{position:absolute;right:12px;top:10px;color:#e7ffff;text-shadow:1px 1px #005050;font-size:11px}
+@media(max-width:520px){.window{height:300px}.taskbutton{min-width:70px}#hint{display:none}}
+</style>
+</head>
+<body>
+<div id="desktop">
+ <div id="hint">KolibriX 98 • прототип робочого столу</div>
+ <div class="desktop-icon" data-app="computer" style="left:16px;top:24px"><span class="glyph">🖥️</span><span>Мій комп'ютер</span></div>
+ <div class="desktop-icon" data-app="files" style="left:16px;top:112px"><span class="glyph">📁</span><span>Мої файли</span></div>
+ <div class="desktop-icon" data-app="python" style="left:16px;top:200px"><span class="glyph">🐍</span><span>Python</span></div>
+ <div class="desktop-icon" data-app="recycle" style="left:16px;top:288px"><span class="glyph">🗑️</span><span>Кошик</span></div>
+</div>
+<div id="taskbar">
+ <button id="start"><b>🪟</b> Пуск</button>
+ <div id="taskbuttons"></div>
+ <div id="tray">12:00</div>
+</div>
+<div id="startmenu">
+ <div class="start-banner">KolibriX 98</div>
+ <div class="start-items">
+  <div class="start-item" data-open="files"><span class="glyph">📁</span>Провідник</div>
+  <div class="start-item" data-open="python"><span class="glyph">🐍</span>Python</div>
+  <div class="start-item" data-open="notepad"><span class="glyph">📝</span>Блокнот</div>
+  <div class="sep"></div>
+  <div class="start-item" data-open="about"><span class="glyph">ℹ️</span>Про KolibriX</div>
+  <div class="sep"></div>
+  <div class="start-item" id="shutdown"><span class="glyph">⏻</span>Завершення роботи</div>
+ </div>
+</div>
+<div id="context">
+ <div class="ctx-item" id="newfolder">📁 Створити папку</div>
+ <div class="ctx-item" id="refresh">🔄 Оновити</div>
+ <div class="ctx-item" id="wallpaper">🎨 Змінити колір фону</div>
+</div>
+<div id="dialog">
+ <div class="titlebar"><span id="dialogtitle">Нова папка</span><button id="dialogclose">×</button></div>
+ <div class="inside"><div id="dialoglabel">Введіть назву папки:</div><input id="foldername" value="Нова папка"></div>
+ <div class="actions"><button id="cancel">Скасувати</button><button id="ok">OK</button></div>
+</div>
+<script>
+const desktop=document.getElementById('desktop'), menu=document.getElementById('startmenu'), ctx=document.getElementById('context');
+let z=20, folderCount=0, dialogAction=null;
+const files=[];
+function openWindow(app){
+ menu.classList.remove('open');ctx.style.display='none';
+ const titles={files:'Мої файли',computer:"Мій комп'ютер",python:'Python для KolibriX',notepad:'Блокнот',about:'Про KolibriX',recycle:'Кошик'};
+ const existing=document.querySelector('.window[data-app="'+app+'"]');
+ if(existing){existing.style.zIndex=++z;return}
+ const win=document.createElement('section');win.className='window';win.dataset.app=app;win.style.left=Math.max(95,(innerWidth-540)/2+Math.random()*35)+'px';win.style.top=Math.max(35,(innerHeight-390)/2+Math.random()*25)+'px';win.style.zIndex=++z;
+ let body='';
+ if(app==='files'||app==='computer'||app==='recycle'){
+  body='<div class="explorer-grid" id="explorer-'+app+'">'+(app==='computer'?'<div class="explorer-item"><span class="glyph">💽</span>Диск системи</div><div class="explorer-item"><span class="glyph">📂</span>Документи</div>':'')+'</div>';
+ }else if(app==='python'){
+  body='<h3>🐍 Python у KolibriX</h3><p>Місце для вбудованого Python-середовища.</p><p>У цьому макеті інтерпретатор ще не підключений.</p><textarea style="width:100%;height:105px;font:13px monospace" placeholder="print(&quot;Hello, KolibriX!&quot;)"></textarea><p><button disabled>▶ Запустити (буде додано)</button></p>';
+ }else if(app==='notepad'){
+  body='<textarea style="width:100%;height:100%;border:0;resize:none;font:13px monospace" placeholder="Введіть текст..."></textarea>';
+ }else{
+  body='<h2>KolibriX 98</h2><p>Ранній прототип інтерфейсу KolibriX на базі ідеї класичного робочого столу Windows 98.</p><p>Папки в цьому макеті зберігаються в пам’яті поточної вкладки. Це ще не системний файловий менеджер KolibriOS.</p><p>Наступний етап — перенесення оболонки на нативні API KolibriOS.</p>';
+ }
+ win.innerHTML='<div class="titlebar"><span>▣ '+titles[app]+'</span><div><button class="min">_</button><button class="close">×</button></div></div><div class="menubar"><span>Файл</span><span>Правка</span><span>Вигляд</span><span>Довідка</span></div><div class="window-body">'+body+'</div><div class="status">Готово</div>';
+ desktop.appendChild(win);
+ const task=document.createElement('button');task.className='taskbutton';task.textContent=titles[app];task.onclick=()=>{win.style.zIndex=++z;win.style.display=win.style.display==='none'?'flex':'none'};document.getElementById('taskbuttons').appendChild(task);
+ win.querySelector('.close').onclick=()=>{win.remove();task.remove()};
+ win.querySelector('.min').onclick=()=>{win.style.display='none'};
+ const bar=win.querySelector('.titlebar');let drag=false,dx=0,dy=0;
+ bar.addEventListener('pointerdown',e=>{if(e.target.tagName==='BUTTON')return;drag=true;dx=e.clientX-win.offsetLeft;dy=e.clientY-win.offsetTop;win.style.zIndex=++z;bar.setPointerCapture(e.pointerId)});
+ bar.addEventListener('pointermove',e=>{if(!drag)return;win.style.left=Math.max(0,Math.min(innerWidth-win.offsetWidth,e.clientX-dx))+'px';win.style.top=Math.max(0,Math.min(innerHeight-35,e.clientY-dy))+'px'});
+ bar.addEventListener('pointerup',()=>drag=false);
+ if(app==='files'||app==='recycle')renderFolders(app);
+}
+function renderFolders(app){
+ const grid=document.getElementById('explorer-'+app);if(!grid)return;grid.innerHTML='';
+ files.filter(f=>app==='files'||f.deleted).forEach(f=>{const el=document.createElement('div');el.className='explorer-item';el.innerHTML='<span class="glyph">📁</span>'+escapeHtml(f.name);grid.appendChild(el)});
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('start').onclick=()=>menu.classList.toggle('open');
+document.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>openWindow(el.dataset.open));
+document.querySelectorAll('.desktop-icon').forEach(el=>el.addEventListener('dblclick',()=>openWindow(el.dataset.app)));
+desktop.addEventListener('contextmenu',e=>{e.preventDefault();ctx.style.display='block';ctx.style.left=Math.min(e.clientX,innerWidth-175)+'px';ctx.style.top=Math.min(e.clientY,innerHeight-95)+'px'});
+document.addEventListener('click',e=>{if(!ctx.contains(e.target)&&e.target!==desktop)ctx.style.display='none';if(!menu.contains(e.target)&&e.target!==document.getElementById('start'))menu.classList.remove('open')});
+function showDialog(action){dialogAction=action;document.getElementById('dialog').style.display='block';document.getElementById('foldername').focus();document.getElementById('foldername').select()}
+document.getElementById('newfolder').onclick=()=>showDialog('folder');
+document.getElementById('ok').onclick=()=>{const name=document.getElementById('foldername').value.trim();if(name&&dialogAction==='folder'){folderCount++;files.push({id:folderCount,name,deleted:false});const el=document.createElement('div');el.className='desktop-icon';el.style.left=(110+((folderCount-1)%5)*88)+'px';el.style.top=(28+Math.floor((folderCount-1)/5)*90)+'px';el.innerHTML='<span class="glyph">📁</span><span>'+escapeHtml(name)+'</span>';el.ondblclick=()=>openWindow('files');desktop.appendChild(el);document.querySelectorAll('.window[data-app="files"],.window[data-app="recycle"]').forEach(w=>renderFolders(w.dataset.app))}document.getElementById('dialog').style.display='none'};
+function closeDialog(){document.getElementById('dialog').style.display='none'}
+document.getElementById('cancel').onclick=closeDialog;document.getElementById('dialogclose').onclick=closeDialog;
+document.getElementById('refresh').onclick=()=>{document.querySelectorAll('.window[data-app="files"],.window[data-app="recycle"]').forEach(w=>renderFolders(w.dataset.app))};
+let wallpaper=0;document.getElementById('wallpaper').onclick=()=>{wallpaper=(wallpaper+1)%4;desktop.style.background=['#008080','#000080','#3a5f8f','#507050'][wallpaper]};
+document.getElementById('shutdown').onclick=()=>{menu.classList.remove('open');openWindow('about')};
+document.getElementById('tray').textContent=new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'});
+setInterval(()=>document.getElementById('tray').textContent=new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}),30000);
+</script>
+</body></html>
