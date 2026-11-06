@@ -10,7 +10,7 @@
 button{font:12px Tahoma,Verdana,sans-serif;color:#000;background:var(--face);border:2px solid;border-color:var(--light) var(--darker) var(--darker) var(--light);padding:4px 9px}
 button:active,.pressed{border-color:var(--darker) var(--light) var(--light) var(--darker);padding:5px 8px 3px 10px}
 #desktop{height:calc(100% - 30px);background:var(--cyan);position:relative;overflow:hidden;padding:10px;color:white}
-.desktop-icon{width:76px;min-height:76px;position:absolute;text-align:center;padding:5px 2px;cursor:default;user-select:none;border:1px solid transparent;text-shadow:1px 1px #000}
+.desktop-icon{width:76px;min-height:76px;position:absolute;text-align:center;padding:5px 2px;cursor:pointer;touch-action:manipulation;user-select:none;border:1px solid transparent;text-shadow:1px 1px #000}
 .desktop-icon.selected{background:#00008088;border:1px dotted #fff}
 .desktop-icon .glyph{font-size:30px;display:block;margin-bottom:5px;text-shadow:none}
 .desktop-icon span:last-child{display:block;line-height:15px}
@@ -121,12 +121,19 @@ function renderFolders(app){
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 document.getElementById('start').onclick=()=>menu.classList.toggle('open');
 document.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>openWindow(el.dataset.open));
-document.querySelectorAll('.desktop-icon').forEach(el=>el.addEventListener('dblclick',()=>openWindow(el.dataset.app)));
+desktop.addEventListener('click',e=>{
+ const icon=e.target.closest('.desktop-icon');
+ if(!icon)return;
+ document.querySelectorAll('.desktop-icon').forEach(item=>item.classList.remove('selected'));
+ icon.classList.add('selected');
+ const app=icon.dataset.app||'files';
+ openWindow(app);
+});
 desktop.addEventListener('contextmenu',e=>{e.preventDefault();ctx.style.display='block';ctx.style.left=Math.min(e.clientX,innerWidth-175)+'px';ctx.style.top=Math.min(e.clientY,innerHeight-95)+'px'});
 document.addEventListener('click',e=>{if(!ctx.contains(e.target)&&e.target!==desktop)ctx.style.display='none';if(!menu.contains(e.target)&&e.target!==document.getElementById('start'))menu.classList.remove('open')});
 function showDialog(action){dialogAction=action;document.getElementById('dialog').style.display='block';document.getElementById('foldername').focus();document.getElementById('foldername').select()}
 document.getElementById('newfolder').onclick=()=>showDialog('folder');
-document.getElementById('ok').onclick=()=>{const name=document.getElementById('foldername').value.trim();if(name&&dialogAction==='folder'){folderCount++;files.push({id:folderCount,name,deleted:false});const el=document.createElement('div');el.className='desktop-icon';el.style.left=(110+((folderCount-1)%5)*88)+'px';el.style.top=(28+Math.floor((folderCount-1)/5)*90)+'px';el.innerHTML='<span class="glyph">📁</span><span>'+escapeHtml(name)+'</span>';el.ondblclick=()=>openWindow('files');desktop.appendChild(el);document.querySelectorAll('.window[data-app="files"],.window[data-app="recycle"]').forEach(w=>renderFolders(w.dataset.app))}document.getElementById('dialog').style.display='none'};
+document.getElementById('ok').onclick=()=>{const name=document.getElementById('foldername').value.trim();if(name&&dialogAction==='folder'){folderCount++;files.push({id:folderCount,name,deleted:false});const el=document.createElement('div');el.className='desktop-icon';el.style.left=(110+((folderCount-1)%5)*88)+'px';el.style.top=(28+Math.floor((folderCount-1)/5)*90)+'px';el.innerHTML='<span class="glyph">📁</span><span>'+escapeHtml(name)+'</span>';el.dataset.app='files';desktop.appendChild(el);document.querySelectorAll('.window[data-app="files"],.window[data-app="recycle"]').forEach(w=>renderFolders(w.dataset.app))}document.getElementById('dialog').style.display='none'};
 function closeDialog(){document.getElementById('dialog').style.display='none'}
 document.getElementById('cancel').onclick=closeDialog;document.getElementById('dialogclose').onclick=closeDialog;
 document.getElementById('refresh').onclick=()=>{document.querySelectorAll('.window[data-app="files"],.window[data-app="recycle"]').forEach(w=>renderFolders(w.dataset.app))};
