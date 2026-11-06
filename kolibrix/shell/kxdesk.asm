@@ -11,6 +11,56 @@ dd memory_end
 dd 0
 dd 0
 
+macro rect x,y,w,h,c
+{
+    mov eax,13
+    mov ebx,(x shl 16)+w
+    mov ecx,(y shl 16)+h
+    mov edx,c
+    int 0x40
+}
+macro txt x,y,c,s
+{
+    mov eax,4
+    mov ebx,(x shl 16)+y
+    mov ecx,c
+    mov edx,s
+    int 0x40
+}
+macro shortcut id,x,y,w,h
+{
+    mov eax,8
+    mov ebx,(x shl 16)+w
+    mov ecx,(y shl 16)+h
+    mov edx,0x20000000+id
+    xor esi,esi
+    int 0x40
+}
+macro menu_button id,offset_y
+{
+    mov eax,8
+    mov ebx,12*65536+198
+    movzx ecx,word [screen_h]
+    sub ecx,offset_y
+    shl ecx,16
+    or ecx,30
+    mov edx,0x20000000+id
+    xor esi,esi
+    int 0x40
+}
+macro menu_text x,offset_y,s
+{
+    mov eax,4
+    mov ebx,x*65536
+    movzx ecx,word [screen_h]
+    sub ecx,offset_y
+    or ebx,ecx
+    mov ecx,0
+    mov edx,s
+    int 0x40
+}
+
+
 start:
     mov eax,14
     int 0x40
@@ -231,55 +281,6 @@ launch_app:
     mov ebx,run_info
     int 0x40
     ret
-
-macro rect x,y,w,h,c
-{
-    mov eax,13
-    mov ebx,(x shl 16)+w
-    mov ecx,(y shl 16)+h
-    mov edx,c
-    int 0x40
-}
-macro txt x,y,c,s
-{
-    mov eax,4
-    mov ebx,(x shl 16)+y
-    mov ecx,c
-    mov edx,s
-    int 0x40
-}
-macro shortcut id,x,y,w,h
-{
-    mov eax,8
-    mov ebx,(x shl 16)+w
-    mov ecx,(y shl 16)+h
-    mov edx,0x20000000+id
-    xor esi,esi
-    int 0x40
-}
-macro menu_button id,offset_y
-{
-    mov eax,8
-    mov ebx,12*65536+198
-    movzx ecx,word [screen_h]
-    sub ecx,offset_y
-    shl ecx,16
-    or ecx,30
-    mov edx,0x20000000+id
-    xor esi,esi
-    int 0x40
-}
-macro menu_text x,offset_y,s
-{
-    mov eax,4
-    mov ebx,x*65536
-    movzx ecx,word [screen_h]
-    sub ecx,offset_y
-    or ebx,ecx
-    mov ecx,0
-    mov edx,s
-    int 0x40
-}
 
 screen_w dw 800
 screen_h dw 600
