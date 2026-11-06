@@ -39,12 +39,11 @@ redraw:
     int 0x40
 
     ; Grey taskbar, anchored to the bottom edge.
-    movzx ebx,word [screen_h]
-    sub ebx,30
-    shl ebx,16
-    movzx eax,word [screen_w]
-    or ebx,eax
-    mov ecx,30
+    movzx ebx,word [screen_w]
+    mov ecx,word [screen_h]
+    sub ecx,30
+    shl ecx,16
+    or ecx,30
     mov edx,0xc0c0c0
     mov eax,13
     int 0x40
@@ -119,11 +118,11 @@ redraw:
 
     ; Raised Start menu panel.
     mov eax,13
-    movzx ebx,word [screen_h]
-    sub ebx,250
-    shl ebx,16
-    or ebx,224
-    mov ecx,220
+    mov ebx,224
+    movzx ecx,word [screen_h]
+    sub ecx,250
+    shl ecx,16
+    or ecx,220
     mov edx,0xc0c0c0
     int 0x40
 
