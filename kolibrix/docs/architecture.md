@@ -25,7 +25,9 @@ KolibriX must own:
 - filesystem layout and persistent user data conventions;
 - release packaging, versioning, and documentation.
 
-KolibriOS supplies the current x86 kernel, drivers, system-call ABI, and compatible native application environment. Upstream notices and GPL-2.0 obligations must be preserved. This is an integrated distribution built on KolibriOS technology; do not claim that the kernel was independently rewritten.
+The long-term KolibriX goal is to own its hardware-driver code: KolibriX-specific drivers are to be designed, written, tested, and maintained in this repository rather than treating upstream KolibriOS drivers as our finished driver stack. Do not copy upstream driver code and relabel it as original.
+
+During the transition, the existing KolibriOS kernel and its driver interfaces may be used as a temporary boot and hardware-enablement foundation. Any such inherited driver must be clearly identified as upstream, not described as a KolibriX-written driver. Replacing the upstream kernel and its remaining driver dependencies is a separate, later kernel-engineering milestone. Preserve upstream notices and GPL-2.0 obligations for any upstream code that is redistributed or modified.
 
 ## Native desktop
 
@@ -45,6 +47,18 @@ The desktop must be the normal graphical environment after boot. A shell process
 - KolibriOS native applications can be reused where compatible, while KolibriX-specific apps should be branded and maintained in this repository.
 - Native KolibriOS executables and Windows PE `.exe` files are different formats. Do not claim arbitrary Windows application support.
 - Windows PE compatibility is a separate research project.
+
+## KolibriX driver development
+
+Drivers are a first-class KolibriX subsystem and must be developed as original, reviewable source code in this repository.
+
+- Start with a documented hardware support matrix and identify the exact emulator/VM devices used for development.
+- Define stable interfaces between the kernel, bus discovery, device drivers, and user-space services before adding individual drivers.
+- Develop and test drivers incrementally in QEMU first; do not claim physical-hardware support based only on emulator tests.
+- Prioritize safe, observable devices such as the virtual display, keyboard, mouse, timer, and storage controller. Add networking and audio only after the basic driver model is stable.
+- For every driver, document supported device IDs, initialization, I/O paths, error handling, and known limitations.
+- Keep upstream KolibriOS drivers clearly marked as temporary dependencies until an original KolibriX replacement exists and passes tests.
+- Do not remove a working upstream driver until its KolibriX replacement has boot, functional, and regression test evidence.
 
 ## Python environment
 
