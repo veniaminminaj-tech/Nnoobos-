@@ -66,7 +66,8 @@ Python and executable-file support are not hardware drivers. They belong to the 
 
 - **Python (.py):** provide a native Python interpreter/runtime for the target x86 environment, a launcher, and a basic editor. The interpreter must actually execute scripts on KolibriX; file association or syntax highlighting alone does not count as Python support.
 - **KolibriOS native executables (.kex / MENUET01):** support the native executable format through the existing KolibriOS-compatible loader while that kernel foundation remains in use. Clearly document which native ABI is supported.
-- **Windows executables (.exe / PE):** investigate a separate PE loader and compatibility layer. A file extension association or a wrapper that simply launches another program is not Windows compatibility. Begin with a documented, limited PE subset and expand only after real test programs run correctly.
+- **Windows executables (.exe / PE):** build a KolibriX Win32 compatibility subsystem: PE32 loader, import resolver, process/thread model, and DLL/API shims. This is not a hardware driver and does not mean embedding Microsoft's Windows. Begin with a deliberately small documented API subset, then run real test binaries and publish results. A file extension association or a wrapper that merely launches another program is not Windows compatibility.
+- **Win32 API layers:** implement compatible subsets of `kernel32.dll`, `user32.dll`, and `gdi32.dll` in stages. Define calling conventions, structures, constants, error behavior, and supported functions in the compatibility documentation before claiming support.
 - Keep runtime support separate from hardware drivers: the Python interpreter, PE loader, system libraries, and compatibility services are software subsystems, not device drivers.
 - Never claim that every Python package or every Windows .exe works. Publish a tested compatibility list and explicit limitations.
 
@@ -86,7 +87,7 @@ Python is a separate engineering milestone:
 - Check the ISO structure and run a QEMU boot smoke test.
 - A headless QEMU timeout only proves that the emulator did not exit early; it does not prove that the desktop appeared or that mouse clicks work.
 - Require visual boot evidence and interaction tests before calling the graphical desktop verified.
-- Keep persistent file operations, Python, and Windows PE compatibility as explicit milestones rather than release claims.
+- Keep persistent file operations, Python, and Win32/PE compatibility as explicit milestones rather than release claims.
 
 ## Milestones
 
@@ -95,7 +96,7 @@ Python is a separate engineering milestone:
 3. Persistent desktop folders, file manager, and user settings.
 4. KolibriX-branded system utilities and applications.
 5. Native Python runtime, editor, and `.py` launcher.
-6. Separate research into Windows PE compatibility.
+6. Specify and implement the PE32 loader and Win32 API compatibility layer, starting with a small tested API subset.
 
 ## Licensing
 
