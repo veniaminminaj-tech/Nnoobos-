@@ -51,7 +51,10 @@ jobs:
           sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX 98: \1\2#' build/AUTORUN.DAT
           printf '\n/SYS/KXDESK "" 0 # Start KolibriX 98 desktop\n' >> build/AUTORUN.DAT
           mcopy -o -i build/kolibrix.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
-          mtype -i build/kolibrix.img ::/SETTINGS/AUTORUN.DAT | grep -F '/SYS/KXDESK'
+          mtype -i build/kolibrix.img ::/SETTINGS/AUTORUN.DAT | tee build/AUTORUN.final.DAT
+          grep -F '/SYS/KXDESK' build/AUTORUN.final.DAT
+          test "$(grep -Fc '/SYS/KXDESK' build/AUTORUN.final.DAT)" -eq 1
+          ! grep -Eq '^/SYS/@(TASKBAR|ICON|DOCKY)([[:space:]]|$)' build/AUTORUN.final.DAT
           mdir -i build/kolibrix.img ::
           printf 'KolibriX 0.2 native desktop edition\r\nBased on the official KolibriOS x86 image.\r\nKXDESK is a native MENUET01 full-screen desktop shell launched at boot.\r\nThe shell provides a Windows 98-style teal desktop, taskbar, Start menu, shortcuts and launches built-in KolibriOS applications.\r\n' > build/KOLIBRIX.TXT
           mcopy -o -i build/kolibrix.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
@@ -85,6 +88,8 @@ jobs:
               initrd16 /kolibrix.img
           }
           EOF
+          test "$(grep -c '^menuentry ' build/iso/boot/grub/grub.cfg)" -eq 1
+          grep -F 'menuentry "KolibriX"' build/iso/boot/grub/grub.cfg
           grub-mkrescue -o build/KolibriX-0.2.0.iso build/iso
           test -s build/KolibriX-0.2.0.iso
           file build/KolibriX-0.2.0.iso
@@ -120,6 +125,7 @@ jobs:
             build/KXDESK
             build/upstream-image.sha256
             build/boot-report.txt
+            build/AUTORUN.final.DAT
 
       - name: Publish prerelease for version tags
         if: startsWith(github.ref, 'refs/tags/kolibrix-v')
