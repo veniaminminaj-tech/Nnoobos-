@@ -42,11 +42,20 @@ jobs:
         run: |
           set -euxo pipefail
           fasm kolibrix/modules/kxhello/kxhello.asm build/KXHELLO.KEX
+          fasm kolibrix/shell/kxdesk.asm build/KXDESK
           test -s build/KXHELLO.KEX
+          test -s build/KXDESK
           mcopy -o -i build/kolibrix.img build/KXHELLO.KEX ::KXHELLO.KEX
-          printf 'KolibriX 0.1.0 bootable base\r\nBased on the official KolibriOS x86 image.\r\nKXHELLO.KEX is a native MENUET01 test application in the disk root.\r\nThe Windows 98-style native desktop shell is not included in this first ISO.\r\n' > build/KOLIBRIX.TXT
-          mcopy -o -i build/kolibrix.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
+          mcopy -o -i build/kolibrix.img build/KXDESK ::KXDESK
+          mcopy -i build/kolibrix.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
+          sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX 98: \1\2#' build/AUTORUN.DAT
+          printf '\n/SYS/KXDESK "" 0 # Start KolibriX 98 desktop\n' >> build/AUTORUN.DAT
+          mcopy -o -i build/kolibrix.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
+          mcopy -o -i build/kolibrix.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
+          mtype -i build/kolibrix.img ::/SETTINGS/AUTORUN.DAT | grep -F '/SYS/KXDESK'
           mdir -i build/kolibrix.img ::
+          printf 'KolibriX 0.2 native desktop edition\r\nBased on the official KolibriOS x86 image.\r\nKXDESK is a native MENUET01 full-screen desktop shell launched at boot.\r\nThe shell provides a Windows 98-style teal desktop, taskbar, Start menu, shortcuts and launches built-in KolibriOS applications.\r\n' > build/KOLIBRIX.TXT
+          mcopy -o -i build/kolibrix.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
 
       - name: Assemble BIOS bootable ISO
         run: |
@@ -60,11 +69,12 @@ jobs:
           KolibriX 0.1.0 — bootable foundation image
           ===========================================
           This ISO boots the official KolibriOS x86 floppy image using GRUB MEMDISK.
-          KolibriX adds KXHELLO.KEX and KOLIBRIX.TXT to the disk image.
+          KolibriX adds the native KXDESK full-screen Windows 98-style desktop shell.
+          KXDESK starts from SETTINGS/AUTORUN.DAT and replaces the stock taskbar,
+          desktop icons and dock. Its Start menu launches built-in KolibriOS apps.
 
-          This is an early bootable foundation release. The planned native Windows
-          98-style desktop shell, persistent desktop folders, and Python runtime
-          are not implemented in this ISO yet.
+          This is an early native-shell release. Persistent desktop folder management,
+          Python runtime and Windows PE compatibility are not implemented yet.
 
           Upstream: https://github.com/KolibriOS/kolibrios
           EOF
@@ -112,6 +122,7 @@ jobs:
             build/KolibriX-0.1.0.iso
             build/kolibrix.img
             build/KXHELLO.KEX
+            build/KXDESK
             build/upstream-image.sha256
             build/boot-report.txt
 
