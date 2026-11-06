@@ -1,0 +1,67 @@
+name: KolibriX 98 Prototype Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag
+        required: true
+        default: v0.1.0
+  push:
+    tags:
+      - "kolibrix-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Prepare prototype package
+        run: |
+          mkdir -p dist/KolibriX-98
+          cp kolibrix/prototype/index.html dist/KolibriX-98/index.html
+          cat > dist/KolibriX-98/README.txt <<'EOF'
+          KolibriX 98 — browser prototype
+          
+          HOW TO RUN:
+          1. Extract this archive.
+          2. Open index.html in a modern web browser.
+          
+          IMPORTANT:
+          This is a browser-based interface prototype, not a bootable operating system
+          and not a native KolibriOS desktop. The Python window is a placeholder.
+          Folder data is temporary and is not saved as a real filesystem.
+          EOF
+          cd dist
+          zip -r KolibriX-98-prototype.zip KolibriX-98
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          name: KolibriX 98 Prototype ${{ inputs.tag_name || github.ref_name }}
+          body: |
+            ## KolibriX 98 — Prototype 0.1.0
+
+            First browser-based mockup of the classic Windows 98-style desktop.
+
+            ### Included
+            - Desktop shortcuts with click/touch activation
+            - Start menu and taskbar
+            - Explorer-style window
+            - Notepad and Python placeholder windows
+            - Create-folder interaction and desktop background colors
+
+            ### Important limitations
+            - This is a browser prototype, not a bootable ISO.
+            - It does not modify or replace KolibriOS.
+            - Python is not embedded or executable yet.
+            - Folders are temporary and are not saved to disk.
+          files: dist/KolibriX-98-prototype.zip
+          prerelease: true
+          generate_release_notes: true
