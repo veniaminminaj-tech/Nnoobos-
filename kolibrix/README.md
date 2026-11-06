@@ -10,7 +10,7 @@ The MVP target is:
 
 - one GRUB boot entry named **KolibriX**;
 - automatic boot into a KolibriX-branded graphical desktop;
-- classic Windows 98 visual style;
+- the KolibriX 0.5 dark-blue glass desktop direction from the supplied HTML concept;
 - desktop shortcuts and a taskbar with a Start menu;
 - working launch actions for compatible built-in KolibriOS utilities;
 - one ISO containing the complete boot path and desktop program.
@@ -21,10 +21,10 @@ The MVP target is:
 - an independently rewritten kernel;
 - persistent desktop icon layout or a complete file manager;
 - a native Python runtime;
-- Windows PE / arbitrary Windows EXE compatibility;
+- a working PE32 loader and Win32 API compatibility implementation;
 - guaranteed support for physical hardware beyond the upstream KolibriOS baseline.
 
-Python `.py` execution and Windows `.exe` compatibility are runtime/loader projects, not hardware drivers.
+Python `.py` execution and Windows `.exe` compatibility are runtime/loader projects, not hardware drivers. The staged Win32 compatibility design is documented in [kolibrix/compat/winapi](compat/winapi/README.md); it is a specification, not an implemented API yet.
 
 ## Build
 
