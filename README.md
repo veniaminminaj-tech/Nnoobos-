@@ -1,33 +1,31 @@
 # KolibriX
 
-KolibriX is a custom x86 distribution based on KolibriOS, developed as independently maintained system modules and a reproducible bootable ISO.
+KolibriX is a planned x86 distribution based on KolibriOS, with a Windows 11-inspired desktop, persistent desktop folders, a file manager, and an integrated Python environment.
 
-## Project status
+## Current status
 
-**Stage 1 — bootable prototype.** The first image uses the official prebuilt KolibriOS floppy image as its booted system, adds the KolibriX native test application, and wraps it in a BIOS-bootable ISO. It is a prototype, not a full desktop replacement yet.
+**Milestone 1 — architecture baseline.** The requirements and technical boundaries are documented in [kolibrix/docs/architecture.md](kolibrix/docs/architecture.md).
 
-## Build
+This branch does not yet contain a verified KolibriX desktop build or a completed bootable ISO workflow. Do not treat the current repository state as a finished operating system.
 
-Open **Actions → Build KolibriX ISO → Run workflow** or push a change to this branch. When the workflow succeeds, download the **KolibriX-ISO** artifact. It contains:
-- `KolibriX.iso` — bootable BIOS ISO
-- `kolibrix.img` — KolibriOS disk image with the KolibriX test app
-- `KXHELLO.KEX` — native Kolibrios application
-- `iso-boot-report.txt` — El Torito boot report
+## Main requirements
 
-## Architecture
-- `kolibrix/modules/` — independent system modules and native applications.
-- `kolibrix/config/` — distribution metadata and module manifest.
-- `kolibrix/docs/` — design and compatibility notes.
-- `.github/workflows/kolibrix-build.yml` — reproducible ISO build.
+- Windows 11-inspired desktop shell, taskbar, Start-style launcher, and context menus.
+- Real folders on the desktop, persisted in user storage across restarts.
+- File manager with create, copy, move, rename, and delete operations.
+- Integrated Python runtime, editor, and `.py` script launcher, after a native KolibriOS/x86 port is verified.
+- Target ISO size: at most 5 GiB.
 
-## Executable compatibility
+## Compatibility
 
-KolibriOS native applications use the MENUET01/KolibriOS executable format and system calls. A Windows `.exe` is a different format. This prototype does **not** claim to run arbitrary Windows PE executables. Windows EXE support is a separate compatibility-layer project and will be developed only after the native system is stable.
+KolibriOS native applications and Windows PE `.exe` files are different executable formats. Native app support does not mean Windows compatibility. Arbitrary Windows PE execution is a separate research and engineering milestone; it is not implemented or promised yet.
 
 ## Upstream and licensing
 
-KolibriX is a derivative distribution built on the official [KolibriOS source project](https://github.com/KolibriOS/kolibrios). Preserve upstream copyright notices and GPL-2.0 license terms when modifying or redistributing upstream components. KolibriX-specific files are identified separately in their headers or documentation.
+- Upstream project: [KolibriOS/kolibrios](https://github.com/KolibriOS/kolibrios)
+- Preserve upstream copyright notices and GPL-2.0 license terms when modifying or redistributing upstream components.
+- Keep KolibriX-specific code and documentation clearly identified.
 
-## Testing
+## Development
 
-Use a disposable VirtualBox/QEMU virtual machine. The workflow validates the ISO structure and performs a BIOS boot smoke test; it does not prove that every device or application works on physical hardware.
+Work is isolated on the `kolibrix-dev` branch. The next engineering task is to pin a specific KolibriOS source revision, verify its build instructions and toolchain, and build a clean baseline image before implementing the desktop shell.
