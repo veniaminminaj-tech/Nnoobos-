@@ -40,7 +40,7 @@ redraw:
 
     ; Grey taskbar, anchored to the bottom edge.
     movzx ebx,word [screen_w]
-    mov ecx,word [screen_h]
+    movzx ecx,word [screen_h]
     sub ecx,30
     shl ecx,16
     or ecx,30
