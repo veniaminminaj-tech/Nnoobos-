@@ -60,6 +60,16 @@ Drivers are a first-class KolibriX subsystem and must be developed as original, 
 - Keep upstream KolibriOS drivers clearly marked as temporary dependencies until an original KolibriX replacement exists and passes tests.
 - Do not remove a working upstream driver until its KolibriX replacement has boot, functional, and regression test evidence.
 
+## Program formats, runtimes, and compatibility
+
+Python and executable-file support are not hardware drivers. They belong to the KolibriX runtime and executable-loading subsystem.
+
+- **Python (.py):** provide a native Python interpreter/runtime for the target x86 environment, a launcher, and a basic editor. The interpreter must actually execute scripts on KolibriX; file association or syntax highlighting alone does not count as Python support.
+- **KolibriOS native executables (.kex / MENUET01):** support the native executable format through the existing KolibriOS-compatible loader while that kernel foundation remains in use. Clearly document which native ABI is supported.
+- **Windows executables (.exe / PE):** investigate a separate PE loader and compatibility layer. A file extension association or a wrapper that simply launches another program is not Windows compatibility. Begin with a documented, limited PE subset and expand only after real test programs run correctly.
+- Keep runtime support separate from hardware drivers: the Python interpreter, PE loader, system libraries, and compatibility services are software subsystems, not device drivers.
+- Never claim that every Python package or every Windows .exe works. Publish a tested compatibility list and explicit limitations.
+
 ## Python environment
 
 Python is a separate engineering milestone:
