@@ -23,7 +23,7 @@ start:
     ; Full-screen borderless client window.
     movzx ebx,word [screen_w]
     movzx ecx,word [screen_h]
-    mov edx,0x40010000
+    mov edx,0x21000000
     int 0x40
 
 redraw:
