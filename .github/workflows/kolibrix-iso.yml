@@ -1,0 +1,136 @@
+name: Build KolibriX bootable ISO
+
+on:
+  push:
+    branches: [kolibrix-dev]
+    tags: ["kolibrix-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout KolibriX
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fasm p7zip-full mtools grub-pc-bin grub-common xorriso syslinux-common qemu-system-x86 file
+
+      - name: Download official KolibriOS base image
+        run: |
+          set -euxo pipefail
+          mkdir -p build/upstream
+          curl --fail --location --retry 3 --retry-delay 2 \
+            https://builds.kolibrios.org/en_US/latest-img.7z \
+            --output build/kolibrios-img.7z
+          sha256sum build/kolibrios-img.7z | tee build/upstream-image.sha256
+          7z x -y build/kolibrios-img.7z -obuild/upstream
+          image="$(find build/upstream -type f -iname '*.img' -print -quit)"
+          test -n "$image"
+          cp "$image" build/kolibrix.img
+          test -s build/kolibrix.img
+          file build/kolibrix.img
+          mdir -i build/kolibrix.img ::
+
+      - name: Build KolibriX native test application
+        run: |
+          set -euxo pipefail
+          fasm kolibrix/modules/kxhello/kxhello.asm build/KXHELLO.KEX
+          test -s build/KXHELLO.KEX
+          mcopy -o -i build/kolibrix.img build/KXHELLO.KEX ::KXHELLO.KEX
+          printf 'KolibriX 0.1.0 bootable base\r\nBased on the official KolibriOS x86 image.\r\nKXHELLO.KEX is a native MENUET01 test application in the disk root.\r\nThe Windows 98-style native desktop shell is not included in this first ISO.\r\n' > build/KOLIBRIX.TXT
+          mcopy -o -i build/kolibrix.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
+          mdir -i build/kolibrix.img ::
+
+      - name: Assemble BIOS bootable ISO
+        run: |
+          set -euxo pipefail
+          mkdir -p build/iso/boot/grub
+          memdisk="$(find /usr/lib -type f -name memdisk -print -quit)"
+          test -n "$memdisk"
+          cp "$memdisk" build/iso/boot/memdisk
+          cp build/kolibrix.img build/iso/kolibrix.img
+          cat > build/iso/README.txt <<'EOF'
+          KolibriX 0.1.0 — bootable foundation image
+          ===========================================
+          This ISO boots the official KolibriOS x86 floppy image using GRUB MEMDISK.
+          KolibriX adds KXHELLO.KEX and KOLIBRIX.TXT to the disk image.
+
+          This is an early bootable foundation release. The planned native Windows
+          98-style desktop shell, persistent desktop folders, and Python runtime
+          are not implemented in this ISO yet.
+
+          Upstream: https://github.com/KolibriOS/kolibrios
+          EOF
+          cat > build/iso/boot/grub/grub.cfg <<'EOF'
+          set timeout=4
+          set default=0
+          menuentry "Start KolibriX 0.1.0" {
+              linux16 /boot/memdisk floppy
+              initrd16 /kolibrix.img
+          }
+          menuentry "KolibriX release information" {
+              cat /README.txt
+              sleep 8
+          }
+          EOF
+          grub-mkrescue -o build/KolibriX-0.1.0.iso build/iso
+          test -s build/KolibriX-0.1.0.iso
+          file build/KolibriX-0.1.0.iso
+          size="$(stat -c %s build/KolibriX-0.1.0.iso)"
+          test "$size" -le 5368709120
+          xorriso -indev build/KolibriX-0.1.0.iso -report_el_torito plain 2>&1 | tee build/boot-report.txt
+          grep -qi 'El Torito' build/boot-report.txt
+
+      - name: BIOS boot smoke test in QEMU
+        run: |
+          set -euxo pipefail
+          set +e
+          timeout 12s qemu-system-i386 \
+            -machine pc -accel tcg -m 128M \
+            -cdrom build/KolibriX-0.1.0.iso -boot d \
+            -display none -monitor none -serial none -no-reboot -no-shutdown
+          status=$?
+          set -e
+          if [ "$status" -ne 124 ] && [ "$status" -ne 0 ]; then
+            echo "QEMU exited unexpectedly with status $status"
+            exit 1
+          fi
+
+      - name: Upload ISO build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KolibriX-0.1.0-ISO
+          if-no-files-found: error
+          path: |
+            build/KolibriX-0.1.0.iso
+            build/kolibrix.img
+            build/KXHELLO.KEX
+            build/upstream-image.sha256
+            build/boot-report.txt
+
+      - name: Publish prerelease for version tags
+        if: startsWith(github.ref, 'refs/tags/kolibrix-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: KolibriX 0.1.0 - Bootable foundation
+          body: |
+            ## KolibriX 0.1.0 - Bootable foundation
+
+            - BIOS-bootable ISO based on the official KolibriOS x86 image.
+            - Includes the native MENUET01 test application KXHELLO.KEX.
+            - Includes release information on the disk image.
+            - Built and smoke-tested in QEMU by GitHub Actions.
+
+            Important: this is the bootable foundation, not the finished Windows 98-style KolibriX desktop. The native shell, persistent desktop folders, and Python runtime are still planned.
+          files: |
+            build/KolibriX-0.1.0.iso
+            build/KXHELLO.KEX
+          prerelease: true
+          generate_release_notes: true
