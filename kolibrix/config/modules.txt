@@ -1,0 +1,3 @@
+# KolibriX native module manifest
+# format: module_id|source_path|output_name|stage
+kxhello|kolibrix/modules/kxhello/kxhello.asm|KXHELLO.KEX|prototype
