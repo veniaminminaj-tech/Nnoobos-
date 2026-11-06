@@ -1,19 +1,33 @@
-# NedohackOS
+# KolibriX
 
-NedohackOS is being developed as a derivative of **KolibriOS**, using the real KolibriOS source tree as its foundation. This branch preserves the original repository history and introduces a reproducible source overlay rather than deleting the existing Nnoobos experiments.
+KolibriX is a custom x86 distribution based on KolibriOS, developed as independently maintained system modules and a reproducible bootable ISO.
 
-## Start here
+## Project status
 
-- [NedohackOS migration notes and build plan](nedohackos/README.md)
-- [Branding overlay script](nedohackos/apply_branding.py)
-- [Validate overlay workflow](.github/workflows/build.yml)
+**Stage 1 — bootable prototype.** The first image uses the official prebuilt KolibriOS floppy image as its booted system, adds the KolibriX native test application, and wraps it in a BIOS-bootable ISO. It is a prototype, not a full desktop replacement yet.
 
-## Upstream project
+## Build
 
-The base operating system is [KolibriOS](https://github.com/KolibriOS/kolibrios), licensed under GPL-2.0. This derivative must retain upstream copyright notices and license terms. The source overlay currently changes the English boot-screen branding, the default ramdisk-save filename, and the source README title.
+Open **Actions → Build KolibriX ISO → Run workflow** or push a change to this branch. When the workflow succeeds, download the **KolibriX-ISO** artifact. It contains:
+- `KolibriX.iso` — bootable BIOS ISO
+- `kolibrix.img` — KolibriOS disk image with the KolibriX test app
+- `KXHELLO.KEX` — native Kolibrios application
+- `iso-boot-report.txt` — El Torito boot report
 
-## Current status
+## Architecture
+- `kolibrix/modules/` — independent system modules and native applications.
+- `kolibrix/config/` — distribution metadata and module manifest.
+- `kolibrix/docs/` — design and compatibility notes.
+- `.github/workflows/kolibrix-build.yml` — reproducible ISO build.
 
-The overlay is a first migration step, **not yet a complete rebrand or bootable NedohackOS ISO**. CI checks that the patch applies cleanly to a pinned KolibriOS source revision and publishes a patch artifact. Building a modified OS image is a later milestone and must be tested in an emulator before being called ready.
+## Executable compatibility
 
-The `main` branch is unchanged. All current work is isolated in `nedohackos-kolibri`.
+KolibriOS native applications use the MENUET01/KolibriOS executable format and system calls. A Windows `.exe` is a different format. This prototype does **not** claim to run arbitrary Windows PE executables. Windows EXE support is a separate compatibility-layer project and will be developed only after the native system is stable.
+
+## Upstream and licensing
+
+KolibriX is a derivative distribution built on the official [KolibriOS source project](https://github.com/KolibriOS/kolibrios). Preserve upstream copyright notices and GPL-2.0 license terms when modifying or redistributing upstream components. KolibriX-specific files are identified separately in their headers or documentation.
+
+## Testing
+
+Use a disposable VirtualBox/QEMU virtual machine. The workflow validates the ISO structure and performs a BIOS boot smoke test; it does not prove that every device or application works on physical hardware.
