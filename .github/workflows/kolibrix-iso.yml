@@ -55,7 +55,7 @@ jobs:
           mcopy -o -i build/inner-iso/kolibri.img build/KXHELLO.KEX ::KXHELLO.KEX
           mcopy -o -i build/inner-iso/kolibri.img build/KXDESK ::KXDESK
           mcopy -i build/inner-iso/kolibri.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
-          sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX: \\1\\2#' build/AUTORUN.DAT
+          sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX: \1\2#' build/AUTORUN.DAT
           printf '\n/SYS/KXDESK "" 0 # Start KolibriX desktop\n' >> build/AUTORUN.DAT
           mcopy -o -i build/inner-iso/kolibri.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
           mtype -i build/inner-iso/kolibri.img ::/SETTINGS/AUTORUN.DAT | tee build/AUTORUN.final.DAT
