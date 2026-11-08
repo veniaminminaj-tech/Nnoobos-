@@ -45,6 +45,7 @@ jobs:
           xorriso -osirrox on -indev build/kolibrios-upstream.iso -extract /kolibri.img build/kolibri.img
           test -s build/kolibri.img
           file build/kolibri.img
+          chmod u+w build/kolibri.img  # xorriso extracts ISO files read-only
           fasm kolibrix/modules/kxhello/kxhello.asm build/KXHELLO.KEX
           fasm kolibrix/shell/kxdesk.asm build/KXDESK
           test -s build/KXHELLO.KEX
