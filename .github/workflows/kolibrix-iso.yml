@@ -1,4 +1,4 @@
-name: Build KolibriX OS ISO
+name: Build KolibriX full LiveCD ISO
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   build-iso:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout KolibriX
         uses: actions/checkout@v4
@@ -22,89 +22,99 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y fasm p7zip-full mtools grub-pc-bin grub-common xorriso syslinux-common qemu-system-x86 file
 
-      - name: Download official KolibriOS base image
+      - name: Download and unpack the FULL official KolibriOS LiveCD
         run: |
           set -euxo pipefail
-          mkdir -p build/upstream
+          mkdir -p build/upstream build/inner-iso
           curl --fail --location --retry 3 --retry-delay 2 \
-            https://builds.kolibrios.org/en_US/latest-img.7z \
-            --output build/kolibrios-img.7z
-          sha256sum build/kolibrios-img.7z | tee build/upstream-image.sha256
-          7z x -y build/kolibrios-img.7z -obuild/upstream
-          image="$(find build/upstream -type f -iname '*.img' -print -quit)"
-          test -n "$image"
-          cp "$image" build/kolibrix.img
-          test -s build/kolibrix.img
-          file build/kolibrix.img
-          mdir -i build/kolibrix.img ::
+            https://builds.kolibrios.org/en_US/latest-iso.7z \
+            --output build/kolibrios-full-livecd.7z
+          sha256sum build/kolibrios-full-livecd.7z | tee build/upstream-archive.sha256
+          7z x -y build/kolibrios-full-livecd.7z -obuild/upstream
+          upstream_iso="$(find build/upstream -type f -iname '*.iso' -print -quit)"
+          test -n "$upstream_iso"
+          cp "$upstream_iso" build/kolibrios-upstream.iso
+          test "$(stat -c %s build/kolibrios-upstream.iso)" -gt 50000000
+          file build/kolibrios-upstream.iso
+          xorriso -indev build/kolibrios-upstream.iso -report_el_torito plain 2>&1 | tee build/upstream-boot-report.txt
+          grep -qi 'El Torito' build/upstream-boot-report.txt
 
-      - name: Build KolibriX native test application
+      - name: Extract the LiveCD filesystem and build KolibriX desktop
         run: |
           set -euxo pipefail
+          xorriso -osirrox on -indev build/kolibrios-upstream.iso -extract / build/inner-iso
+          test -s build/inner-iso/kolibri.img
+          test -s build/inner-iso/cdboot.bin
+          test -s build/inner-iso/kernel.mnt
+          file build/inner-iso/kolibri.img
+          mdir -i build/inner-iso/kolibri.img ::
           fasm kolibrix/modules/kxhello/kxhello.asm build/KXHELLO.KEX
           fasm kolibrix/shell/kxdesk.asm build/KXDESK
           test -s build/KXHELLO.KEX
           test -s build/KXDESK
-          mcopy -o -i build/kolibrix.img build/KXHELLO.KEX ::KXHELLO.KEX
-          mcopy -o -i build/kolibrix.img build/KXDESK ::KXDESK
-          mcopy -i build/kolibrix.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
-          sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX 98: \1\2#' build/AUTORUN.DAT
-          printf '\n/SYS/KXDESK "" 0 # Start KolibriX 98 desktop\n' >> build/AUTORUN.DAT
-          mcopy -o -i build/kolibrix.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
-          mtype -i build/kolibrix.img ::/SETTINGS/AUTORUN.DAT | tee build/AUTORUN.final.DAT
+          mcopy -o -i build/inner-iso/kolibri.img build/KXHELLO.KEX ::KXHELLO.KEX
+          mcopy -o -i build/inner-iso/kolibri.img build/KXDESK ::KXDESK
+          mcopy -i build/inner-iso/kolibri.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
+          sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX: \\1\\2#' build/AUTORUN.DAT
+          printf '\n/SYS/KXDESK "" 0 # Start KolibriX desktop\n' >> build/AUTORUN.DAT
+          mcopy -o -i build/inner-iso/kolibri.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
+          mtype -i build/inner-iso/kolibri.img ::/SETTINGS/AUTORUN.DAT | tee build/AUTORUN.final.DAT
           grep -F '/SYS/KXDESK' build/AUTORUN.final.DAT
           test "$(grep -Fc '/SYS/KXDESK' build/AUTORUN.final.DAT)" -eq 1
           ! grep -Eq '^/SYS/@(TASKBAR|ICON|DOCKY)([[:space:]]|$)' build/AUTORUN.final.DAT
-          mdir -i build/kolibrix.img ::
-          printf 'KolibriX 0.2 native desktop edition\r\nBased on the official KolibriOS x86 image.\r\nKXDESK is a native MENUET01 full-screen desktop shell launched at boot.\r\nThe shell provides a Windows 98-style teal desktop, taskbar, Start menu, shortcuts and launches built-in KolibriOS applications.\r\n' > build/KOLIBRIX.TXT
-          mcopy -o -i build/kolibrix.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
+          printf 'KolibriX 0.3.0 — full LiveCD edition\r\nBased on the complete official KolibriOS LiveCD.\r\nKolibriX adds a native MENUET01 desktop shell while retaining the upstream LiveCD files and applications.\r\n' > build/KOLIBRIX.TXT
+          mcopy -o -i build/inner-iso/kolibri.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
+          mdir -i build/inner-iso/kolibri.img ::
 
-      - name: Assemble BIOS bootable ISO
+      - name: Rebuild the original bootable KolibriOS LiveCD with KolibriX
         run: |
           set -euxo pipefail
-          mkdir -p build/iso/boot/grub
+          xorriso -as mkisofs \
+            -U -J -pad \
+            -b cdboot.bin -no-emul-boot -c boot.catalog \
+            -hide-joliet boot.catalog -hide-joliet cdboot.bin \
+            -hide-joliet kernel.mnt -graft-points \
+            -A "KolibriX Full LiveCD" -p "KolibriX Project" \
+            -publisher "KolibriX based on KolibriOS" -V "KOLIBRIX" \
+            -sysid "KOLIBRI" -iso-level 3 \
+            -o "$GITHUB_WORKSPACE/build/kolibrios-full-custom.iso" .
+          test -s build/kolibrios-full-custom.iso
+          test "$(stat -c %s build/kolibrios-full-custom.iso)" -gt 50000000
+          xorriso -indev build/kolibrios-full-custom.iso -report_el_torito plain 2>&1 | tee build/full-livecd-boot-report.txt
+          grep -qi 'El Torito' build/full-livecd-boot-report.txt
+
+      - name: Create a single-entry KolibriX boot ISO
+        run: |
+          set -euxo pipefail
+          mkdir -p build/outer-iso/boot/grub
           memdisk="$(find /usr/lib -type f -name memdisk -print -quit)"
           test -n "$memdisk"
-          cp "$memdisk" build/iso/boot/memdisk
-          cp build/kolibrix.img build/iso/kolibrix.img
-          cat > build/iso/README.txt <<'EOF'
-          KolibriX 0.2 — native desktop image
-          ===========================================
-          This ISO boots the official KolibriOS x86 floppy image using GRUB MEMDISK.
-          KolibriX adds the native KXDESK full-screen Windows 98-style desktop shell.
-          KXDESK starts from SETTINGS/AUTORUN.DAT and replaces the stock taskbar,
-          desktop icons and dock. Its Start menu launches built-in KolibriOS apps.
-
-          This is an early native-shell release. Persistent desktop folder management,
-          Python runtime and Windows PE compatibility are not implemented yet.
-
-          Upstream: https://github.com/KolibriOS/kolibrios
-          EOF
-          cat > build/iso/boot/grub/grub.cfg <<'EOF'
+          cp "$memdisk" build/outer-iso/boot/memdisk
+          cp build/kolibrios-full-custom.iso build/outer-iso/kolibrios.iso
+          cat > build/outer-iso/boot/grub/grub.cfg <<'EOF'
           set timeout=4
           set default=0
           menuentry "KolibriX" {
-              linux16 /boot/memdisk floppy
-              initrd16 /kolibrix.img
+              linux16 /boot/memdisk iso raw
+              initrd16 /kolibrios.iso
           }
           EOF
-          test "$(grep -c '^menuentry ' build/iso/boot/grub/grub.cfg)" -eq 1
-          grep -F 'menuentry "KolibriX"' build/iso/boot/grub/grub.cfg
-          grub-mkrescue -o build/KolibriX-0.2.0.iso build/iso
-          test -s build/KolibriX-0.2.0.iso
-          file build/KolibriX-0.2.0.iso
-          size="$(stat -c %s build/KolibriX-0.2.0.iso)"
-          test "$size" -le 5368709120
-          xorriso -indev build/KolibriX-0.2.0.iso -report_el_torito plain 2>&1 | tee build/boot-report.txt
-          grep -qi 'El Torito' build/boot-report.txt
+          test "$(grep -c '^menuentry ' build/outer-iso/boot/grub/grub.cfg)" -eq 1
+          grep -F 'menuentry "KolibriX"' build/outer-iso/boot/grub/grub.cfg
+          grub-mkrescue -o build/KolibriX-0.3.0.iso build/outer-iso
+          test -s build/KolibriX-0.3.0.iso
+          test "$(stat -c %s build/KolibriX-0.3.0.iso)" -gt 50000000
+          file build/KolibriX-0.3.0.iso
+          xorriso -indev build/KolibriX-0.3.0.iso -report_el_torito plain 2>&1 | tee build/kolibrix-boot-report.txt
+          grep -qi 'El Torito' build/kolibrix-boot-report.txt
 
       - name: BIOS boot smoke test in QEMU
         run: |
           set -euxo pipefail
           set +e
-          timeout 12s qemu-system-i386 \
-            -machine pc -accel tcg -m 128M \
-            -cdrom build/KolibriX-0.2.0.iso -boot d \
+          timeout 25s qemu-system-i386 \
+            -machine pc -accel tcg -m 512M \
+            -cdrom build/KolibriX-0.3.0.iso -boot d \
             -display none -monitor none -serial none -no-reboot -no-shutdown
           status=$?
           set -e
@@ -113,37 +123,40 @@ jobs:
             exit 1
           fi
 
-      - name: Upload ISO build artifacts
+      - name: Upload full LiveCD build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: KolibriX-0.2.0-ISO
+          name: KolibriX-0.3.0-Full-LiveCD-ISO
           if-no-files-found: error
           path: |
-            build/KolibriX-0.2.0.iso
-            build/kolibrix.img
+            build/KolibriX-0.3.0.iso
+            build/kolibrios-full-custom.iso
             build/KXHELLO.KEX
             build/KXDESK
-            build/upstream-image.sha256
-            build/boot-report.txt
+            build/upstream-archive.sha256
+            build/upstream-boot-report.txt
+            build/full-livecd-boot-report.txt
+            build/kolibrix-boot-report.txt
             build/AUTORUN.final.DAT
 
       - name: Publish prerelease for version tags
         if: startsWith(github.ref, 'refs/tags/kolibrix-v')
         uses: softprops/action-gh-release@v2
         with:
-          name: KolibriX 0.2 - Native desktop
+          name: KolibriX 0.3.0 - Full LiveCD
           body: |
-            ## KolibriX 0.2 - Native desktop
+            ## KolibriX 0.3.0 - Full LiveCD
 
-            - BIOS-bootable ISO based on the official KolibriOS x86 image.
-            - Starts the native KXDESK graphical desktop automatically at boot.
-            - Provides a Windows 98-style desktop, taskbar, Start menu and app shortcuts.
-            - Launches the built-in KolibriOS file manager, terminal, editor, settings and games.
-            - Built and smoke-tested in QEMU by GitHub Actions.
+            - Based on the complete official KolibriOS LiveCD ISO, not the 1.44 MB floppy image.
+            - Retains the upstream LiveCD filesystem and its bundled applications.
+            - Adds the native KolibriX KXDESK shell to the system image.
+            - Provides one GRUB entry named KolibriX and boots the full LiveCD through MEMDISK ISO emulation.
+            - The build verifies the inner and outer El Torito boot records and runs a QEMU BIOS smoke test.
 
-            Persistent desktop folders, Python runtime and Windows PE compatibility remain future milestones.
+            Python runtime, Win32/PE compatibility and a rewritten kernel remain future milestones.
           files: |
-            build/KolibriX-0.2.0.iso
+            build/KolibriX-0.3.0.iso
+            build/kolibrios-full-custom.iso
             build/KXHELLO.KEX
             build/KXDESK
           prerelease: true
