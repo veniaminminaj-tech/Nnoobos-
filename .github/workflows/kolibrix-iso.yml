@@ -25,7 +25,7 @@ jobs:
       - name: Download and unpack the FULL official KolibriOS LiveCD
         run: |
           set -euxo pipefail
-          mkdir -p build/upstream build/inner-iso
+          mkdir -p build/upstream
           curl --fail --location --retry 3 --retry-delay 2 \
             https://builds.kolibrios.org/en_US/latest-iso.7z \
             --output build/kolibrios-full-livecd.7z
@@ -42,42 +42,37 @@ jobs:
       - name: Extract the LiveCD filesystem and build KolibriX desktop
         run: |
           set -euxo pipefail
-          xorriso -osirrox on -indev build/kolibrios-upstream.iso -extract / build/inner-iso
-          test -s build/inner-iso/kolibri.img
-          test -s build/inner-iso/cdboot.bin
-          test -s build/inner-iso/kernel.mnt
-          file build/inner-iso/kolibri.img
-          mdir -i build/inner-iso/kolibri.img ::
+          xorriso -osirrox on -indev build/kolibrios-upstream.iso -extract /kolibri.img build/kolibri.img
+          test -s build/kolibri.img
+          file build/kolibri.img
           fasm kolibrix/modules/kxhello/kxhello.asm build/KXHELLO.KEX
           fasm kolibrix/shell/kxdesk.asm build/KXDESK
           test -s build/KXHELLO.KEX
           test -s build/KXDESK
-          mcopy -o -i build/inner-iso/kolibri.img build/KXHELLO.KEX ::KXHELLO.KEX
-          mcopy -o -i build/inner-iso/kolibri.img build/KXDESK ::KXDESK
-          mcopy -i build/inner-iso/kolibri.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
+          mcopy -o -i build/kolibri.img build/KXHELLO.KEX ::KXHELLO.KEX
+          mcopy -o -i build/kolibri.img build/KXDESK ::KXDESK
+          mcopy -i build/kolibri.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
           sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX: \1\2#' build/AUTORUN.DAT
           printf '\n/SYS/KXDESK "" 0 # Start KolibriX desktop\n' >> build/AUTORUN.DAT
-          mcopy -o -i build/inner-iso/kolibri.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
-          mtype -i build/inner-iso/kolibri.img ::/SETTINGS/AUTORUN.DAT | tee build/AUTORUN.final.DAT
+          mcopy -o -i build/kolibri.img build/AUTORUN.DAT ::/SETTINGS/AUTORUN.DAT
+          mtype -i build/kolibri.img ::/SETTINGS/AUTORUN.DAT | tee build/AUTORUN.final.DAT
           grep -F '/SYS/KXDESK' build/AUTORUN.final.DAT
           test "$(grep -Fc '/SYS/KXDESK' build/AUTORUN.final.DAT)" -eq 1
           ! grep -Eq '^/SYS/@(TASKBAR|ICON|DOCKY)([[:space:]]|$)' build/AUTORUN.final.DAT
           printf 'KolibriX 0.3.0 — full LiveCD edition\r\nBased on the complete official KolibriOS LiveCD.\r\nKolibriX adds a native MENUET01 desktop shell while retaining the upstream LiveCD files and applications.\r\n' > build/KOLIBRIX.TXT
-          mcopy -o -i build/inner-iso/kolibri.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
-          mdir -i build/inner-iso/kolibri.img ::
+          mcopy -o -i build/kolibri.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
+          mdir -i build/kolibri.img ::
 
-      - name: Rebuild the original bootable KolibriOS LiveCD with KolibriX
+      - name: Patch the full LiveCD while preserving its original boot sector
         run: |
           set -euxo pipefail
-          xorriso -as mkisofs \
-            -U -J -pad \
-            -b cdboot.bin -no-emul-boot -c boot.catalog \
-            -hide-joliet boot.catalog -hide-joliet cdboot.bin \
-            -hide-joliet kernel.mnt -graft-points \
-            -A "KolibriX Full LiveCD" -p "KolibriX Project" \
-            -publisher "KolibriX based on KolibriOS" -V "KOLIBRIX" \
-            -sysid "KOLIBRI" -iso-level 3 \
-            -o "$GITHUB_WORKSPACE/build/kolibrios-full-custom.iso" .
+          xorriso \
+            -indev build/kolibrios-upstream.iso \
+            -outdev build/kolibrios-full-custom.iso \
+            -boot_image any replay \
+            -map build/kolibri.img /kolibri.img \
+            -map build/KOLIBRIX.TXT /KOLIBRIX.TXT \
+            -commit -end
           test -s build/kolibrios-full-custom.iso
           test "$(stat -c %s build/kolibrios-full-custom.iso)" -gt 50000000
           xorriso -indev build/kolibrios-full-custom.iso -report_el_torito plain 2>&1 | tee build/full-livecd-boot-report.txt
