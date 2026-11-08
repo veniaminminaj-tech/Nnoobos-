@@ -70,7 +70,7 @@ jobs:
           xorriso \
             -indev build/kolibrios-upstream.iso \
             -outdev build/kolibrios-full-custom.iso \
-            -boot_image any replay \
+            -boot_image any keep \
             -map build/kolibri.img /kolibri.img \
             -map build/KOLIBRIX.TXT /KOLIBRIX.TXT \
             -commit -end
