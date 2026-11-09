@@ -60,7 +60,7 @@ jobs:
           grep -F '/SYS/KXDESK' build/AUTORUN.final.DAT
           test "$(grep -Fc '/SYS/KXDESK' build/AUTORUN.final.DAT)" -eq 1
           ! grep -Eq '^/SYS/@(TASKBAR|ICON|DOCKY)([[:space:]]|$)' build/AUTORUN.final.DAT
-          printf 'KolibriX 0.3.0 — full LiveCD edition\r\nBased on the complete official KolibriOS LiveCD.\r\nKolibriX adds a native MENUET01 desktop shell while retaining the upstream LiveCD files and applications.\r\n' > build/KOLIBRIX.TXT
+          printf 'KolibriX 0.5.0 — full LiveCD edition\r\nBased on the complete official KolibriOS LiveCD.\r\nKolibriX 0.5 adds a refreshed dark-blue native MENUET01 desktop shell, app shortcuts, a Start menu, and launch actions for compatible upstream utilities while retaining the full LiveCD.\r\n' > build/KOLIBRIX.TXT
           mcopy -o -i build/kolibri.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
           mdir -i build/kolibri.img ::
 
@@ -97,11 +97,11 @@ jobs:
           EOF
           test "$(grep -c '^menuentry ' build/outer-iso/boot/grub/grub.cfg)" -eq 1
           grep -F 'menuentry "KolibriX"' build/outer-iso/boot/grub/grub.cfg
-          grub-mkrescue -o build/KolibriX-0.3.0.iso build/outer-iso
-          test -s build/KolibriX-0.3.0.iso
-          test "$(stat -c %s build/KolibriX-0.3.0.iso)" -gt 50000000
-          file build/KolibriX-0.3.0.iso
-          xorriso -indev build/KolibriX-0.3.0.iso -report_el_torito plain 2>&1 | tee build/kolibrix-boot-report.txt
+          grub-mkrescue -o build/KolibriX-0.5.0.iso build/outer-iso
+          test -s build/KolibriX-0.5.0.iso
+          test "$(stat -c %s build/KolibriX-0.5.0.iso)" -gt 50000000
+          file build/KolibriX-0.5.0.iso
+          xorriso -indev build/KolibriX-0.5.0.iso -report_el_torito plain 2>&1 | tee build/kolibrix-boot-report.txt
           grep -qi 'El Torito' build/kolibrix-boot-report.txt
 
       - name: BIOS boot smoke test in QEMU
@@ -110,7 +110,7 @@ jobs:
           set +e
           timeout 25s qemu-system-i386 \
             -machine pc -accel tcg -m 512M \
-            -cdrom build/KolibriX-0.3.0.iso -boot d \
+            -cdrom build/KolibriX-0.5.0.iso -boot d \
             -display none -monitor none -serial none -no-reboot -no-shutdown
           status=$?
           set -e
@@ -122,10 +122,10 @@ jobs:
       - name: Upload full LiveCD build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: KolibriX-0.3.0-Full-LiveCD-ISO
+          name: KolibriX-0.5.0-Full-LiveCD-ISO
           if-no-files-found: error
           path: |
-            build/KolibriX-0.3.0.iso
+            build/KolibriX-0.5.0.iso
             build/kolibrios-full-custom.iso
             build/KXHELLO.KEX
             build/KXDESK
@@ -139,9 +139,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/kolibrix-v')
         uses: softprops/action-gh-release@v2
         with:
-          name: KolibriX 0.3.0 - Full LiveCD
+          name: KolibriX 0.5.0 - Full LiveCD
           body: |
-            ## KolibriX 0.3.0 - Full LiveCD
+            ## KolibriX 0.5.0 - Full LiveCD
 
             - Based on the complete official KolibriOS LiveCD ISO, not the 1.44 MB floppy image.
             - Retains the upstream LiveCD filesystem and its bundled applications.
@@ -149,9 +149,9 @@ jobs:
             - Provides one GRUB entry named KolibriX and boots the full LiveCD through MEMDISK ISO emulation.
             - The build verifies the inner and outer El Torito boot records and runs a QEMU BIOS smoke test.
 
-            Python runtime, Win32/PE compatibility and a rewritten kernel remain future milestones.
+            Native Python execution, Windows PE/Win32 compatibility, persistent file-management features, and a rewritten kernel remain future milestones. This preview does not claim those features are implemented.
           files: |
-            build/KolibriX-0.3.0.iso
+            build/KolibriX-0.5.0.iso
             build/kolibrios-full-custom.iso
             build/KXHELLO.KEX
             build/KXDESK
