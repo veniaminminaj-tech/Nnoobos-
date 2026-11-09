@@ -1,5 +1,5 @@
-; KolibriX 98 native graphical desktop
-; Built with FASM for the official KolibriOS x86 system.
+; KolibriX 0.5 native desktop shell
+; FASM / KolibriOS MENUET01 ABI. Uses upstream system services.
 use32
 org 0
 db 'MENUET01'
@@ -39,11 +39,11 @@ macro shortcut id,x,y,w,h
 macro menu_button id,offset_y
 {
     mov eax,8
-    mov ebx,12*65536+198
+    mov ebx,14*65536+236
     movzx ecx,word [screen_h]
     sub ecx,offset_y
     shl ecx,16
-    or ecx,30
+    or ecx,34
     mov edx,0x20000000+id
     xor esi,esi
     int 0x40
@@ -55,11 +55,10 @@ macro menu_text x,offset_y,s
     movzx ecx,word [screen_h]
     sub ecx,offset_y
     or ebx,ecx
-    mov ecx,0
+    mov ecx,0x00E8F0FF
     mov edx,s
     int 0x40
 }
-
 
 start:
     mov eax,14
@@ -70,7 +69,6 @@ start:
     and eax,0xffff
     mov [screen_h],ax
 
-    ; Full-screen borderless client window.
     movzx ebx,word [screen_w]
     movzx ecx,word [screen_h]
     mov edx,0x21000000
@@ -81,84 +79,93 @@ redraw:
     mov ebx,1
     int 0x40
 
-    ; Teal desktop.
+    ; Deep navy desktop and subtle header.
     mov eax,13
     movzx ebx,word [screen_w]
     movzx ecx,word [screen_h]
-    mov edx,0x008080
+    mov edx,0x101827
     int 0x40
+    rect 0,0,800,48,0x18263A
+    rect 0,48,800,1,0x29435F
+    txt 22,30,0x00E8F0FF,label_brand
+    txt 650,30,0x0089BFFF,label_release
 
-    ; Grey taskbar, anchored to the bottom edge.
-    movzx ebx,word [screen_w]
-    movzx ecx,word [screen_h]
-    sub ecx,30
-    shl ecx,16
-    or ecx,30
-    mov edx,0xc0c0c0
-    mov eax,13
-    int 0x40
+    ; Desktop app cards.
+    shortcut 2,24,78,158,112
+    shortcut 3,196,78,158,112
+    shortcut 4,368,78,158,112
+    shortcut 5,540,78,158,112
 
-    ; Classic raised Start button.
-    mov eax,8
-    mov ebx,5*65536+72
-    movzx ecx,word [screen_h]
-    sub ecx,26
-    shl ecx,16
-    or ecx,21
-    mov edx,1
-    mov esi,0xc0c0c0
-    int 0x40
+    rect 24,78,158,112,0x1D3048
+    rect 25,79,156,1,0x426080
+    rect 42,96,38,34,0x315B7D
+    rect 47,101,28,24,0xB8DFFF
+    txt 42,151,0x00E8F0FF,label_files
 
-    ; Invisible clickable shortcut areas.
-    shortcut 2,16,20,100,82
-    shortcut 3,16,120,100,82
-    shortcut 4,16,220,100,82
-    shortcut 5,16,320,100,82
+    rect 196,78,158,112,0x1D3048
+    rect 197,79,156,1,0x426080
+    rect 214,96,38,34,0x244B5F
+    rect 220,102,26,22,0x59B9C8
+    txt 214,151,0x00E8F0FF,label_terminal
 
-    ; Start menu hit areas.
-    menu_button 10,238
-    menu_button 11,204
-    menu_button 12,170
-    menu_button 13,136
-    menu_button 14,102
+    rect 368,78,158,112,0x1D3048
+    rect 369,79,156,1,0x426080
+    rect 386,96,38,34,0x4A456A
+    rect 392,102,26,22,0xC4B7FF
+    txt 386,151,0x00E8F0FF,label_notepad
 
-    ; Desktop icons.
-    rect 25,28,34,28,0xffffff
-    rect 28,31,28,21,0x000080
-    txt 16,65,0xffffff,label_computer
+    rect 540,78,158,112,0x1D3048
+    rect 541,79,156,1,0x426080
+    rect 558,96,38,34,0x365B46
+    rect 564,102,26,22,0x91D6A7
+    txt 558,151,0x00E8F0FF,label_settings
 
-    rect 25,128,34,28,0xffffff
-    rect 28,132,28,20,0xe0b040
-    txt 16,165,0xffffff,label_files
+    ; Welcome / system information panel.
+    rect 24,218,674,112,0x17263A
+    rect 24,218,674,1,0x35516E
+    txt 44,250,0x00FFFFFF,label_welcome
+    txt 44,276,0x00B8DFFF,label_subtitle
+    txt 44,302,0x008FA8C8,label_native
 
-    rect 25,228,34,28,0xffffff
-    rect 28,232,28,20,0x204080
-    txt 16,265,0xffffff,label_terminal
-
-    rect 25,328,34,28,0xffffff
-    rect 28,332,28,20,0xffffff
-    txt 16,365,0xffffff,label_notepad
-
-    txt 16,8,0xffffff,label_brand
-
-    ; Start button caption and taskbar branding.
-    mov eax,4
-    mov ebx,15*65536
-    movzx edx,word [screen_h]
-    sub edx,19
-    add ebx,edx
-    mov ecx,0
-    mov edx,label_start
-    int 0x40
-
-    mov eax,4
-    movzx ebx,word [screen_w]
-    sub ebx,116
+    ; Bottom taskbar.
+    movzx ebx,word [screen_h]
+    sub ebx,48
     shl ebx,16
-    movzx eax,word [screen_h]
-    sub eax,19
-    or ebx,eax
-    mov ecx,0
+    or ebx,48
+    movzx ecx,word [screen_w]
+    mov edx,0x17263A
+    mov eax,13
+    int 0x40
+    movzx ebx,word [screen_w]
+    movzx ecx,word [screen_h]
+    sub ecx,48
+    shl ecx,16
+    or ecx,1
+    mov edx,0x35516E
+    mov eax,13
+    int 0x40
+
+    ; Start button.
+    mov eax,8
+    mov ebx,12*65536+104
+    movzx ecx,word [screen_h]
+    sub ecx,42
+    shl ecx,16
+    or ecx,34
+    mov edx,1
+    mov esi,0x294B6A
+    int 0x40
+    txt 30,0,0x00FFFFFF,label_start
+
+    ; Version label at the right.
+    mov eax,4
+    movzx ebx,word [screen_w]
+    sub ebx,140
+    shl ebx,16
+    movzx ecx,word [screen_h]
+    sub ecx,19
+    or ebx,ecx
+    mov ecx,0x00B8DFFF
     mov edx,label_version
     mov eax,4
     int 0x40
@@ -166,33 +173,27 @@ redraw:
     cmp byte [menu_open],1
     jne redraw_done
 
-    ; Raised Start menu panel.
+    ; Start panel and entries.
     mov eax,13
-    mov ebx,224
+    mov ebx,14*65536+254
     movzx ecx,word [screen_h]
-    sub ecx,250
+    sub ecx,310
     shl ecx,16
-    or ecx,220
-    mov edx,0xc0c0c0
+    or ecx,292
+    mov edx,0x1B2D43
     int 0x40
-
-    ; Blue vertical banner.
-    mov eax,13
-    mov ebx,5*65536+28
-    movzx ecx,word [screen_h]
-    sub ecx,245
-    shl ecx,16
-    or ecx,210
-    mov edx,0x000080
-    int 0x40
-
-    ; Start menu items.
-    menu_text 22,228,label_menu_files
-    menu_text 22,194,label_menu_terminal
-    menu_text 22,160,label_menu_notepad
-    menu_text 22,126,label_menu_settings
-    menu_text 22,92,label_menu_games
-    menu_text 9,70,label_menu_brand
+    rect 14,0,254,2,0x4D83AE
+    menu_text 30,278,label_menu_title
+    menu_button 10,242
+    menu_button 11,204
+    menu_button 12,166
+    menu_button 13,128
+    menu_button 14,90
+    menu_text 30,250,label_menu_files
+    menu_text 30,212,label_menu_terminal
+    menu_text 30,174,label_menu_notepad
+    menu_text 30,136,label_menu_settings
+    menu_text 30,98,label_menu_games
 
 redraw_done:
     mov eax,12
@@ -228,7 +229,7 @@ button_event:
     cmp eax,4
     je run_notepad
     cmp eax,5
-    je run_games
+    je run_settings
     cmp byte [menu_open],1
     jne event_loop
     cmp eax,10
@@ -292,18 +293,22 @@ path_terminal db '/SYS/TERMINAL',0
 path_notepad db '/SYS/TINYPAD',0
 path_settings db '/SYS/SETUP',0
 path_games db '/SYS/ALLGAMES',0
-label_brand db 'KolibriX 98',0
-label_version db 'KolibriX 0.2',0
+label_brand db 'KolibriX',0
+label_release db '0.5 PREVIEW',0
+label_version db 'KolibriX 0.5.0',0
 label_start db 'Start',0
-label_computer db 'My Computer',0
-label_files db 'Files',0
+label_files db 'File Manager',0
 label_terminal db 'Terminal',0
-label_notepad db 'Notepad',0
-label_menu_brand db 'KolibriX 98',0
+label_notepad db 'Text Editor',0
+label_settings db 'Settings',0
+label_welcome db 'Welcome to KolibriX 0.5',0
+label_subtitle db 'A refreshed native desktop on the KolibriOS x86 foundation.',0
+label_native db 'Native apps use the upstream KolibriOS ABI in this preview.',0
+label_menu_title db 'KOLIBRIX  /  APPLICATIONS',0
 label_menu_files db 'File Manager',0
 label_menu_terminal db 'Terminal',0
-label_menu_notepad db 'Notepad',0
-label_menu_settings db 'Settings',0
+label_menu_notepad db 'Text Editor',0
+label_menu_settings db 'System Settings',0
 label_menu_games db 'Games',0
 image_end:
 memory_end:
