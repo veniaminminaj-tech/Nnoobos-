@@ -155,7 +155,14 @@ redraw:
     mov edx,1
     mov esi,0x294B6A
     int 0x40
-    txt 30,0,0x00FFFFFF,label_start
+    mov eax,4
+    mov ebx,30*65536
+    movzx edx,word [screen_h]
+    sub edx,29
+    or ebx,edx
+    mov ecx,0x00FFFFFF
+    mov edx,label_start
+    int 0x40
 
     ; Version label at the right.
     mov eax,4
@@ -182,7 +189,14 @@ redraw:
     or ecx,292
     mov edx,0x1B2D43
     int 0x40
-    rect 14,0,254,2,0x4D83AE
+    mov eax,13
+    mov ebx,14*65536+254
+    movzx ecx,word [screen_h]
+    sub ecx,310
+    shl ecx,16
+    or ecx,2
+    mov edx,0x4D83AE
+    int 0x40
     menu_text 30,278,label_menu_title
     menu_button 10,242
     menu_button 11,204
