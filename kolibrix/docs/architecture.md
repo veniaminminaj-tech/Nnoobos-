@@ -4,7 +4,7 @@
 
 KolibriX is one operating-system distribution: KolibriOS x86 is the low-level kernel and hardware/API foundation; KolibriX supplies the identity, boot configuration, desktop shell, system utilities, defaults, and later its own userland applications. The result must be presented as KolibriX, not as a separate KolibriOS session with a theme layered on top.
 
-Target desktop: classic Windows 98 visual language (teal desktop, grey taskbar, Start menu, classic windows and shortcuts). Target ISO size: at most 5 GiB.
+KolibriX 0.5 desktop direction: dark navy/blue interface with application cards, a taskbar, and a Start menu. The current preview is a native shell, not yet a full window manager or persistent desktop environment. Target ISO size: at most 5 GiB.
 
 ## Boot design
 
