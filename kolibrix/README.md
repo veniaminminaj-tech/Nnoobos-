@@ -2,24 +2,24 @@
 
 KolibriX is a single x86 operating-system distribution built on the KolibriOS kernel and native system ABI while its own userland is developed.
 
-## Current development target: bootable desktop MVP
+## Current development target: KolibriX 0.5 preview
 
 The first MVP is intentionally being built **without writing new hardware drivers**. It temporarily uses the upstream KolibriOS kernel and hardware support so development can focus on the KolibriX system identity and graphical environment.
 
-The MVP target is:
+The 0.5 preview target is:
 
 - one GRUB boot entry named **KolibriX**;
 - automatic boot into a KolibriX-branded graphical desktop;
-- the KolibriX 0.5 dark-blue glass desktop direction from the supplied HTML concept;
-- desktop shortcuts and a taskbar with a Start menu;
+- a dark-blue native desktop with application cards, a taskbar, and a Start menu;
+- clickable shortcuts for the compatible upstream file manager, terminal, text editor, settings, and games;
 - working launch actions for compatible built-in KolibriOS utilities;
 - one ISO containing the complete boot path and desktop program.
 
-## What is not included yet
+## 0.5 preview limitations
 
 - original KolibriX hardware drivers;
 - an independently rewritten kernel;
-- persistent desktop icon layout or a complete file manager;
+- persistent desktop icon layout and KolibriX-owned file manager operations;
 - a native Python runtime;
 - a working PE32 loader and Win32 API compatibility implementation;
 - guaranteed support for physical hardware beyond the upstream KolibriOS baseline.
@@ -30,7 +30,7 @@ Python `.py` execution and Windows `.exe` compatibility are runtime/loader proje
 
 GitHub Actions workflow: [KolibriX ISO](../../actions/workflows/kolibrix-iso.yml).
 
-The workflow compiles the native desktop with FASM, places it into the KolibriOS image, configures automatic startup, builds a BIOS-bootable ISO with one GRUB entry, and performs a QEMU boot-path smoke test.
+The workflow compiles the native desktop with FASM, places it into the complete KolibriOS LiveCD image, configures automatic startup, builds a BIOS-bootable ISO with one GRUB entry, and performs a QEMU boot-path smoke test. The desktop is an early preview; QEMU headless testing does not verify visual rendering or every click.
 
 A successful headless QEMU smoke test confirms only that the emulator did not exit early. It does not by itself prove that the graphical desktop rendered correctly or that every menu action works. Those require visual and interactive testing.
 
