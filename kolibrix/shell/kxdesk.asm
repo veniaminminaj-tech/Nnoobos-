@@ -144,8 +144,8 @@ redraw:
     rect 432,196,24,2,0xFFFFFF
     rect 432,203,24,2,0xFFFFFF
     rect 432,210,18,2,0xFFFFFF
-    txt 422,253,0x00FFFFFF,label_notepad
-    txt 422,269,0x00C7BFEA,label_editor_sub
+    txt 422,253,0x00FFFFFF,label_codestudio
+    txt 422,269,0x00C7BFEA,label_codestudio_sub
 
     ; Settings tile.
     rect 582,166,166,112,0x29483F
@@ -289,7 +289,7 @@ redraw:
     sub edx,24
     or ebx,edx
     mov ecx,0x00FFFFFF
-    mov edx,label_editor_short
+    mov edx,label_code_short
     int 0x40
     mov eax,4
     mov ebx,488*65536
@@ -330,7 +330,7 @@ redraw:
     menu_button 14,128
     menu_text 42,304,label_menu_files
     menu_text 42,262,label_menu_terminal
-    menu_text 42,220,label_menu_notepad
+    menu_text 42,220,label_menu_codestudio
     menu_text 42,178,label_menu_settings
     menu_text 42,136,label_menu_games
 
@@ -366,7 +366,7 @@ button_event:
     cmp eax,3
     je run_terminal
     cmp eax,4
-    je run_notepad
+    je run_codestudio
     cmp eax,5
     je run_settings
     cmp byte [menu_open],1
@@ -395,7 +395,7 @@ run_terminal:
     call launch_app
     jmp close_menu
 run_notepad:
-    mov esi,path_notepad
+    mov esi,path_codestudio
     call launch_app
     jmp close_menu
 run_settings:
@@ -428,7 +428,7 @@ align 4
 run_info dd 7,0,0,0,0,0
 path_files db '/SYS/FILE MANAGERS/EOLITE',0
 path_terminal db '/SYS/TERMINAL',0
-path_notepad db '/SYS/TINYPAD',0
+path_notepad db '/SYS/DEVELOP/CEDIT',0
 path_settings db '/SYS/SETUP',0
 path_games db '/SYS/ALLGAMES',0
 label_brand db 'KolibriX',0
@@ -447,8 +447,8 @@ label_files_sub db 'Browse your system',0
 label_terminal_icon db '>_',0
 label_terminal db 'Terminal',0
 label_terminal_sub db 'Run commands',0
-label_notepad db 'Text Editor',0
-label_editor_sub db 'Write and edit text',0
+label_notepad db 'Code Studio',0
+label_editor_sub db 'C / C++ / C# development',0
 label_settings db 'Settings',0
 label_settings_sub db 'Configure KolibriX',0
 label_widget_title db 'Quick glance',0
@@ -460,12 +460,12 @@ label_system_line2 db 'Upstream drivers are used in this preview.',0
 label_start_short db 'K',0
 label_files_short db 'F',0
 label_terminal_short db 'T',0
-label_editor_short db 'E',0
+label_editor_short db '</>',0
 label_settings_short db 'S',0
 label_menu_title db 'KOLIBRIX  /  APPS',0
 label_menu_files db 'File Manager',0
 label_menu_terminal db 'Terminal',0
-label_menu_notepad db 'Text Editor',0
+label_menu_notepad db 'Code Studio',0
 label_menu_settings db 'System Settings',0
 label_menu_games db 'Games',0
 image_end:
