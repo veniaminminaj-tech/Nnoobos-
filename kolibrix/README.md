@@ -10,8 +10,8 @@ The 0.5 preview target is:
 
 - one GRUB boot entry named **KolibriX**;
 - automatic boot into a KolibriX-branded graphical desktop;
-- a dark-blue native desktop with application cards, a taskbar, and a Start menu;
-- clickable shortcuts for the compatible upstream file manager, terminal, text editor, settings, and games;
+- a hybrid dark-blue desktop concept combining a macOS-inspired top menu bar and dock, Windows 11-inspired taskbar and information cards, and iOS-inspired touch-friendly app tiles;
+- clickable shortcuts for compatible upstream file manager, terminal, text editor, settings, and games;
 - working launch actions for compatible built-in KolibriOS utilities;
 - one ISO containing the complete boot path and desktop program.
 
@@ -30,7 +30,7 @@ Python `.py` execution and Windows `.exe` compatibility are runtime/loader proje
 
 GitHub Actions workflow: [KolibriX ISO](../../actions/workflows/kolibrix-iso.yml).
 
-The workflow compiles the native desktop with FASM, places it into the complete KolibriOS LiveCD image, configures automatic startup, builds a BIOS-bootable ISO with one GRUB entry, and performs a QEMU boot-path smoke test. The desktop is an early preview; QEMU headless testing does not verify visual rendering or every click.
+The workflow compiles the native desktop with FASM, places it into the complete KolibriOS LiveCD image, configures automatic startup, builds a BIOS-bootable ISO with one GRUB entry, and performs a QEMU boot-path smoke test. The desktop is an early preview. The visual language is inspired by macOS, Windows 11, and iOS; it is not an exact copy. QEMU headless testing does not verify visual rendering or every click.
 
 A successful headless QEMU smoke test confirms only that the emulator did not exit early. It does not by itself prove that the graphical desktop rendered correctly or that every menu action works. Those require visual and interactive testing.
 
