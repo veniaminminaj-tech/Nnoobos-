@@ -8,11 +8,10 @@ KolibriX 1.0 desktop direction: a dark navy/blue hybrid interface. It combines a
 
 ## Boot design
 
-- The ISO has exactly one visible GRUB menu entry, named **KolibriX**.
-- Selecting it boots the KolibriOS x86 core and starts the KolibriX system startup configuration.
-- No second GRUB entry for upstream KolibriOS or a release-information screen.
-- Release information belongs in documentation inside the ISO, not as another boot choice.
-- KolibriX 1.0 patches the complete official KolibriOS LiveCD ISO and preserves its original El Torito boot path. The build does not wrap the full LiveCD inside a second MEMDISK ISO. The upstream bootloader and low-level boot chain remain inherited components.
+- KolibriX 1.0 ships the patched complete official KolibriOS LiveCD ISO directly and preserves its original El Torito boot catalog and bootloader.
+- The build does not place the full LiveCD inside a second MEMDISK-wrapped ISO; this avoids the extra nested boot layer used by the 0.5 preview.
+- The upstream bootloader and low-level boot chain remain inherited components. The desktop identifies itself as KolibriX after the system startup configuration launches KXDESK.
+- A KolibriX-branded boot menu is a later bootloader-integration task; 1.0 does not claim that the upstream boot menu has been replaced.
 
 ## System ownership
 
