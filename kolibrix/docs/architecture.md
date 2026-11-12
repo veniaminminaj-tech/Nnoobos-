@@ -45,7 +45,7 @@ The desktop must be the normal graphical environment after boot. A shell process
 ## Applications and compatibility
 
 - KolibriOS native applications can be reused where compatible, while KolibriX-specific apps should be branded and maintained in this repository.
-- Native KolibriOS executables and Windows PE `.exe` files are different formats. Do not claim arbitrary Windows application support.
+- Native KolibriOS executables and Windows PE .exe files are different formats. Do not claim arbitrary Windows application support.
 - Windows PE compatibility is a separate research project.
 
 ## KolibriX driver development
@@ -64,19 +64,46 @@ Drivers are a first-class KolibriX subsystem and must be developed as original, 
 
 Python and executable-file support are not hardware drivers. They belong to the KolibriX runtime and executable-loading subsystem.
 
-- **Python (.py):** provide a native Python interpreter/runtime for the target x86 environment, a launcher, and a basic editor. The interpreter must actually execute scripts on KolibriX; file association or syntax highlighting alone does not count as Python support.
-- **KolibriOS native executables (.kex / MENUET01):** support the native executable format through the existing KolibriOS-compatible loader while that kernel foundation remains in use. Clearly document which native ABI is supported.
-- **Windows executables (.exe / PE):** build a KolibriX Win32 compatibility subsystem: PE32 loader, import resolver, process/thread model, and DLL/API shims. This is not a hardware driver and does not mean embedding Microsoft's Windows. Begin with a deliberately small documented API subset, then run real test binaries and publish results. A file extension association or a wrapper that merely launches another program is not Windows compatibility.
-- **Win32 API layers:** implement compatible subsets of `kernel32.dll`, `user32.dll`, and `gdi32.dll` in stages. Define calling conventions, structures, constants, error behavior, and supported functions in the compatibility documentation before claiming support.
+- Python (.py): provide a native Python interpreter/runtime for the target x86 environment, a launcher, and a basic editor. The interpreter must actually execute scripts on KolibriX; file association or syntax highlighting alone does not count as Python support.
+- KolibriOS native executables (.kex / MENUET01): support the native executable format through the existing KolibriOS-compatible loader while that kernel foundation remains in use. Clearly document which native ABI is supported.
+- Windows executables (.exe / PE): build a KolibriX Win32 compatibility subsystem: PE32 loader, import resolver, process/thread model, and DLL/API shims. This is not a hardware driver and does not mean embedding Microsoft's Windows. Begin with a deliberately small documented API subset, then run real test binaries and publish results. A file extension association or a wrapper that merely launches another program is not Windows compatibility.
+- Win32 API layers: implement compatible subsets of kernel32.dll, user32.dll, and gdi32.dll in stages. Define calling conventions, structures, constants, error behavior, and supported functions in the compatibility documentation before claiming support.
 - Keep runtime support separate from hardware drivers: the Python interpreter, PE loader, system libraries, and compatibility services are software subsystems, not device drivers.
 - Never claim that every Python package or every Windows .exe works. Publish a tested compatibility list and explicit limitations.
+
+## Programming languages
+
+The programming environment is a separate userland/toolchain subsystem, not part of the kernel or hardware drivers.
+
+### C
+
+- Start from the established KolibriOS x86 SDK/toolchain (including its GCC-based compiler path) rather than assuming a generic host GCC can emit a working KolibriOS executable.
+- Package or build a pinned cross-compiler, matching headers, startup objects, linker scripts, libraries, and executable packer.
+- Compile a minimal C program, then test native system calls, file access, and GUI events in QEMU.
+- Verify the actual generated binary format and ABI before making it available as a system compiler.
+
+### C++
+
+- Use the matching KolibriOS C++ cross-toolchain and verify the C++ runtime and standard-library subset.
+- Begin with a minimal program that does not depend on unsupported runtime features.
+- Add exceptions, RTTI, threads, and standard-library components only after the matching runtime support is demonstrated.
+- Keep C and C++ ABI/startup configuration consistent so C libraries can be linked safely.
+
+### C#
+
+- C# needs both a compiler and a managed runtime. A compiler that emits .NET IL is not enough to execute programs on KolibriX.
+- Research a small Mono-based x86 runtime port and identify the required memory management, exception, threading, file, and system-call services.
+- Start with a console Hello World test, then add file I/O and basic UI bindings.
+- Do not claim that ordinary Windows .NET executables or all modern .NET APIs are supported. Publish the tested language/runtime profile.
+
+Starter source examples and status are maintained in kolibrix/devtools. They are examples and documentation only until compiler/runtime integration and execution tests are complete.
 
 ## Python environment
 
 Python is a separate engineering milestone:
 - identify a Python interpreter version that can be built for KolibriOS/x86;
 - port/adapt the runtime and required system calls;
-- provide an editor and `.py` launcher;
+- provide an editor and .py launcher;
 - document unsupported standard-library modules;
 - do not bundle Windows Python or claim Python support until native execution is tested.
 
@@ -87,7 +114,7 @@ Python is a separate engineering milestone:
 - Check the ISO structure and run a QEMU boot smoke test.
 - A headless QEMU timeout only proves that the emulator did not exit early; it does not prove that the desktop appeared or that mouse clicks work.
 - Require visual boot evidence and interaction tests before calling the graphical desktop verified.
-- Keep persistent file operations, Python, and Win32/PE compatibility as explicit milestones rather than release claims.
+- Keep persistent file operations, language toolchains/runtimes, Python, and Win32/PE compatibility as explicit milestones rather than release claims.
 
 ## Milestones
 
@@ -95,8 +122,10 @@ Python is a separate engineering milestone:
 2. Native KolibriX desktop that starts automatically and handles real input.
 3. Persistent desktop folders, file manager, and user settings.
 4. KolibriX-branded system utilities and applications.
-5. Native Python runtime, editor, and `.py` launcher.
-6. Specify and implement the PE32 loader and Win32 API compatibility layer, starting with a small tested API subset.
+5. C and C++ cross-toolchain, SDK headers, native examples, and QEMU execution tests.
+6. C# compiler/runtime research and a minimal managed Hello World execution test.
+7. Native Python runtime, editor, and .py launcher.
+8. Specify and implement the PE32 loader and Win32 API compatibility layer, starting with a small tested API subset.
 
 ## Licensing
 
