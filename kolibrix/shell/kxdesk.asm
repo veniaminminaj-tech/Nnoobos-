@@ -436,7 +436,7 @@ label_menu_file db 'File',0
 label_menu_edit db 'Edit',0
 label_menu_view db 'View',0
 label_menu_help db 'Help',0
-label_status db 'Wi-Fi  /  Sound',0
+label_status db 'PREVIEW BUILD',0
 label_clock db 'KX 0.5',0
 label_release db '0.5 PREVIEW',0
 label_welcome db 'A desktop that feels familiar.',0
