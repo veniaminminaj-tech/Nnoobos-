@@ -1,4 +1,4 @@
-; KolibriX 0.5 — hybrid desktop concept
+; KolibriX 1.0 — hybrid desktop concept
 ; Visual direction: macOS menu bar + dock, Windows 11 taskbar/cards,
 ; and iOS-style app tiles. Native MENUET01 / KolibriOS x86 ABI.
 ; This is a shell preview, not a full compositor/window manager.
@@ -436,9 +436,9 @@ label_menu_file db 'File',0
 label_menu_edit db 'Edit',0
 label_menu_view db 'View',0
 label_menu_help db 'Help',0
-label_status db 'PREVIEW BUILD',0
-label_clock db 'KX 0.5',0
-label_release db '0.5 PREVIEW',0
+label_status db 'VERSION 1.0.0',0
+label_clock db 'KX 1.0',0
+label_release db '1.0 RELEASE',0
 label_welcome db 'A desktop that feels familiar.',0
 label_subtitle db 'macOS-inspired menu bar  |  Windows 11 layout  |  iOS-like app tiles',0
 label_native db 'NATIVE',0
