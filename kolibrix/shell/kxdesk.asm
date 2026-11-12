@@ -1,5 +1,7 @@
-; KolibriX 0.5 native desktop shell
-; FASM / KolibriOS MENUET01 ABI. Uses upstream system services.
+; KolibriX 0.5 — hybrid desktop concept
+; Visual direction: macOS menu bar + dock, Windows 11 taskbar/cards,
+; and iOS-style app tiles. Native MENUET01 / KolibriOS x86 ABI.
+; This is a shell preview, not a full compositor/window manager.
 use32
 org 0
 db 'MENUET01'
@@ -39,7 +41,7 @@ macro shortcut id,x,y,w,h
 macro menu_button id,offset_y
 {
     mov eax,8
-    mov ebx,14*65536+236
+    mov ebx,22*65536+250
     movzx ecx,word [screen_h]
     sub ecx,offset_y
     shl ecx,16
@@ -55,7 +57,7 @@ macro menu_text x,offset_y,s
     movzx ecx,word [screen_h]
     sub ecx,offset_y
     or ebx,ecx
-    mov ecx,0x00E8F0FF
+    mov ecx,0x00EAF4FF
     mov edx,s
     int 0x40
 }
@@ -68,7 +70,6 @@ start:
     mov [screen_w],bx
     and eax,0xffff
     mov [screen_h],ax
-
     movzx ebx,word [screen_w]
     movzx ecx,word [screen_h]
     mov edx,0x21000000
@@ -79,135 +80,203 @@ redraw:
     mov ebx,1
     int 0x40
 
-    ; Deep navy desktop and subtle header.
-    mov eax,13
+    ; Deep gradient-like wallpaper built from native filled rectangles.
     movzx ebx,word [screen_w]
     movzx ecx,word [screen_h]
-    mov edx,0x101827
+    mov edx,0x101A32
+    mov eax,13
     int 0x40
-    rect 0,0,800,48,0x18263A
-    rect 0,48,800,1,0x29435F
-    txt 22,30,0x00E8F0FF,label_brand
-    txt 650,30,0x0089BFFF,label_release
+    rect 0,34,800,105,0x17264A
+    rect 0,139,800,100,0x182747
+    rect 0,239,800,100,0x17243F
+    rect 0,339,800,100,0x141F37
+    rect 0,439,800,1,0x314768
 
-    ; Desktop app cards.
-    shortcut 2,24,78,158,112
-    shortcut 3,196,78,158,112
-    shortcut 4,368,78,158,112
-    shortcut 5,540,78,158,112
+    ; macOS-inspired translucent menu bar.
+    rect 0,0,800,34,0x101827
+    rect 0,33,800,1,0x3A5272
+    rect 14,8,18,18,0x4A9BD5
+    rect 18,12,10,10,0xEAF4FF
+    txt 42,22,0x00FFFFFF,label_brand
+    txt 138,22,0x00C5D8EE,label_menu_file
+    txt 188,22,0x00C5D8EE,label_menu_edit
+    txt 238,22,0x00C5D8EE,label_menu_view
+    txt 288,22,0x00C5D8EE,label_menu_help
+    txt 620,22,0x00B8DFFF,label_status
+    txt 720,22,0x00FFFFFF,label_clock
 
-    rect 24,78,158,112,0x1D3048
-    rect 25,79,156,1,0x426080
-    rect 42,96,38,34,0x315B7D
-    rect 47,101,28,24,0xB8DFFF
-    txt 42,151,0x00E8F0FF,label_files
+    ; Welcome panel / Windows 11-style information widget.
+    rect 34,58,732,82,0x203653
+    rect 34,58,732,1,0x53769A
+    rect 34,58,4,82,0x58A9E6
+    txt 58,88,0x00FFFFFF,label_welcome
+    txt 58,113,0x00C6D9ED,label_subtitle
+    txt 648,88,0x008FD4FF,label_release
+    txt 648,113,0x008FD4FF,label_native
 
-    rect 196,78,158,112,0x1D3048
-    rect 197,79,156,1,0x426080
-    rect 214,96,38,34,0x244B5F
-    rect 220,102,26,22,0x59B9C8
-    txt 214,151,0x00E8F0FF,label_terminal
+    ; iOS-like app tiles: large, simple, touch-friendly hit areas.
+    shortcut 2,36,166,166,112
+    shortcut 3,218,166,166,112
+    shortcut 4,400,166,166,112
+    shortcut 5,582,166,166,112
 
-    rect 368,78,158,112,0x1D3048
-    rect 369,79,156,1,0x426080
-    rect 386,96,38,34,0x4A456A
-    rect 392,102,26,22,0xC4B7FF
-    txt 386,151,0x00E8F0FF,label_notepad
+    ; Files tile.
+    rect 36,166,166,112,0x233B59
+    rect 36,166,166,1,0x52769B
+    rect 58,188,44,38,0x4A9BD5
+    rect 64,195,32,25,0xDCEEFF
+    rect 64,192,20,5,0xDCEEFF
+    txt 58,253,0x00FFFFFF,label_files
+    txt 58,269,0x00AFCBE7,label_files_sub
 
-    rect 540,78,158,112,0x1D3048
-    rect 541,79,156,1,0x426080
-    rect 558,96,38,34,0x365B46
-    rect 564,102,26,22,0x91D6A7
-    txt 558,151,0x00E8F0FF,label_settings
+    ; Terminal tile.
+    rect 218,166,166,112,0x263B55
+    rect 218,166,166,1,0x52769B
+    rect 240,188,44,38,0x245B6D
+    txt 250,213,0x00C5F2F2,label_terminal_icon
+    txt 240,253,0x00FFFFFF,label_terminal
+    txt 240,269,0x00AFCBE7,label_terminal_sub
 
-    ; Welcome / system information panel.
-    rect 24,218,674,112,0x17263A
-    rect 24,218,674,1,0x35516E
-    txt 44,250,0x00FFFFFF,label_welcome
-    txt 44,276,0x00B8DFFF,label_subtitle
-    txt 44,302,0x008FA8C8,label_native
+    ; Editor tile.
+    rect 400,166,166,112,0x343653
+    rect 400,166,166,1,0x746B9D
+    rect 422,188,44,38,0x70669B
+    rect 432,196,24,2,0xFFFFFF
+    rect 432,203,24,2,0xFFFFFF
+    rect 432,210,18,2,0xFFFFFF
+    txt 422,253,0x00FFFFFF,label_notepad
+    txt 422,269,0x00C7BFEA,label_editor_sub
 
-    ; Bottom taskbar.
+    ; Settings tile.
+    rect 582,166,166,112,0x29483F
+    rect 582,166,166,1,0x5C927D
+    rect 604,188,44,38,0x3E795F
+    rect 624,194,4,26,0xD7F4E5
+    rect 613,205,26,4,0xD7F4E5
+    txt 604,253,0x00FFFFFF,label_settings
+    txt 604,269,0x00B9DEC9,label_settings_sub
+
+    ; Secondary widgets, inspired by macOS desktop widgets.
+    rect 36,302,350,116,0x1C2E49
+    rect 36,302,350,1,0x466588
+    txt 56,332,0x00FFFFFF,label_widget_title
+    txt 56,360,0x00C8DDF0,label_widget_line1
+    txt 56,385,0x008EB9E0,label_widget_line2
+
+    rect 404,302,344,116,0x1C2E49
+    rect 404,302,344,1,0x466588
+    txt 424,332,0x00FFFFFF,label_system_title
+    txt 424,360,0x00C8DDF0,label_system_line1
+    txt 424,385,0x008EB9E0,label_system_line2
+
+    ; Windows 11 centered taskbar + macOS-style dock surface.
     movzx ebx,word [screen_h]
-    sub ebx,48
+    sub ebx,58
     shl ebx,16
-    or ebx,48
+    or ebx,58
     movzx ecx,word [screen_w]
     mov edx,0x17263A
     mov eax,13
     int 0x40
     movzx ebx,word [screen_w]
     movzx ecx,word [screen_h]
-    sub ecx,48
+    sub ecx,58
     shl ecx,16
     or ecx,1
-    mov edx,0x35516E
+    mov edx,0x496582
     mov eax,13
     int 0x40
 
-    ; Start button.
-    mov eax,8
-    mov ebx,12*65536+104
-    movzx ecx,word [screen_h]
-    sub ecx,42
-    shl ecx,16
-    or ecx,34
-    mov edx,1
-    mov esi,0x294B6A
-    int 0x40
+    ; Dock background and app icons.
+    rect 244,screen_h_dummy,312,1,0x557796
+    rect 244,0,312,1,0x557796
+    rect 258,0,42,42,0x356B98
+    rect 312,0,42,42,0x245B6D
+    rect 366,0,42,42,0x70669B
+    rect 420,0,42,42,0x3E795F
+    rect 474,0,42,42,0x3D4E70
+
+    ; Dock icons and Start button are registered as click targets.
+    shortcut 1,258,0,42,42
+    shortcut 2,312,0,42,42
+    shortcut 3,366,0,42,42
+    shortcut 4,420,0,42,42
+    shortcut 5,474,0,42,42
+    ; Draw icons near the bottom edge using screen-relative coordinates.
     mov eax,4
-    mov ebx,30*65536
+    mov ebx,273*65536
     movzx edx,word [screen_h]
-    sub edx,29
+    sub edx,31
     or ebx,edx
     mov ecx,0x00FFFFFF
-    mov edx,label_start
+    mov edx,label_start_short
     int 0x40
-
-    ; Version label at the right.
     mov eax,4
-    movzx ebx,word [screen_w]
-    sub ebx,140
-    shl ebx,16
-    movzx ecx,word [screen_h]
-    sub ecx,19
-    or ebx,ecx
-    mov ecx,0x00B8DFFF
-    mov edx,label_version
+    mov ebx,326*65536
+    movzx edx,word [screen_h]
+    sub edx,31
+    or ebx,edx
+    mov ecx,0x00FFFFFF
+    mov edx,label_files_short
+    int 0x40
     mov eax,4
+    mov ebx,380*65536
+    movzx edx,word [screen_h]
+    sub edx,31
+    or ebx,edx
+    mov ecx,0x00FFFFFF
+    mov edx,label_terminal_short
+    int 0x40
+    mov eax,4
+    mov ebx,434*65536
+    movzx edx,word [screen_h]
+    sub edx,31
+    or ebx,edx
+    mov ecx,0x00FFFFFF
+    mov edx,label_editor_short
+    int 0x40
+    mov eax,4
+    mov ebx,488*65536
+    movzx edx,word [screen_h]
+    sub edx,31
+    or ebx,edx
+    mov ecx,0x00FFFFFF
+    mov edx,label_settings_short
     int 0x40
 
     cmp byte [menu_open],1
     jne redraw_done
 
-    ; Start panel and entries.
+    ; Compact centered Start / app launcher panel.
+    movzx eax,word [screen_h]
+    sub eax,370
+    shl eax,16
+    or eax,310
+    mov ebx,22*65536+310
+    mov ecx,eax
+    mov edx,0x1D304B
     mov eax,13
-    mov ebx,14*65536+254
-    movzx ecx,word [screen_h]
-    sub ecx,310
-    shl ecx,16
-    or ecx,292
-    mov edx,0x1B2D43
     int 0x40
+    movzx eax,word [screen_h]
+    sub eax,370
+    shl eax,16
+    or eax,2
+    mov ebx,22*65536+310
+    mov ecx,eax
+    mov edx,0x68A9D8
     mov eax,13
-    mov ebx,14*65536+254
-    movzx ecx,word [screen_h]
-    sub ecx,310
-    shl ecx,16
-    or ecx,2
-    mov edx,0x4D83AE
     int 0x40
-    menu_text 30,278,label_menu_title
-    menu_button 10,242
-    menu_button 11,204
-    menu_button 12,166
-    menu_button 13,128
-    menu_button 14,90
-    menu_text 30,250,label_menu_files
-    menu_text 30,212,label_menu_terminal
-    menu_text 30,174,label_menu_notepad
-    menu_text 30,136,label_menu_settings
-    menu_text 30,98,label_menu_games
+    menu_text 42,338,label_menu_title
+    menu_button 10,296
+    menu_button 11,254
+    menu_button 12,212
+    menu_button 13,170
+    menu_button 14,128
+    menu_text 42,304,label_menu_files
+    menu_text 42,262,label_menu_terminal
+    menu_text 42,220,label_menu_notepad
+    menu_text 42,178,label_menu_settings
+    menu_text 42,136,label_menu_games
 
 redraw_done:
     mov eax,12
@@ -261,7 +330,6 @@ button_event:
 toggle_menu:
     xor byte [menu_open],1
     jmp redraw
-
 run_files:
     mov esi,path_files
     call launch_app
@@ -308,17 +376,37 @@ path_notepad db '/SYS/TINYPAD',0
 path_settings db '/SYS/SETUP',0
 path_games db '/SYS/ALLGAMES',0
 label_brand db 'KolibriX',0
+label_menu_file db 'File',0
+label_menu_edit db 'Edit',0
+label_menu_view db 'View',0
+label_menu_help db 'Help',0
+label_status db 'Wi-Fi  /  Sound',0
+label_clock db 'KX 0.5',0
 label_release db '0.5 PREVIEW',0
-label_version db 'KolibriX 0.5.0',0
-label_start db 'Start',0
-label_files db 'File Manager',0
+label_welcome db 'A desktop that feels familiar.',0
+label_subtitle db 'macOS-inspired menu bar  |  Windows 11 layout  |  iOS-like app tiles',0
+label_native db 'NATIVE',0
+label_files db 'Files',0
+label_files_sub db 'Browse your system',0
+label_terminal_icon db '>_',0
 label_terminal db 'Terminal',0
+label_terminal_sub db 'Run commands',0
 label_notepad db 'Text Editor',0
+label_editor_sub db 'Write and edit text',0
 label_settings db 'Settings',0
-label_welcome db 'Welcome to KolibriX 0.5',0
-label_subtitle db 'A refreshed native desktop on the KolibriOS x86 foundation.',0
-label_native db 'Native apps use the upstream KolibriOS ABI in this preview.',0
-label_menu_title db 'KOLIBRIX  /  APPLICATIONS',0
+label_settings_sub db 'Configure KolibriX',0
+label_widget_title db 'Quick glance',0
+label_widget_line1 db 'Your KolibriX desktop is ready.',0
+label_widget_line2 db 'Choose an app tile or open the dock.',0
+label_system_title db 'System foundation',0
+label_system_line1 db 'KolibriOS x86 kernel and native ABI',0
+label_system_line2 db 'Upstream drivers are used in this preview.',0
+label_start_short db 'K',0
+label_files_short db 'F',0
+label_terminal_short db 'T',0
+label_editor_short db 'E',0
+label_settings_short db 'S',0
+label_menu_title db 'KOLIBRIX  /  APPS',0
 label_menu_files db 'File Manager',0
 label_menu_terminal db 'Terminal',0
 label_menu_notepad db 'Text Editor',0
