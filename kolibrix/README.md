@@ -24,6 +24,7 @@ The 0.5 preview target is:
 - a working PE32 loader and Win32 API compatibility implementation;
 - C/C++ development toolchain integrated into the ISO;
 - C# compiler/runtime integration;
+- VS Code-style project explorer, integrated terminal, LSP/IntelliSense, extensions, and debugger integration;
 - guaranteed support for physical hardware beyond the upstream KolibriOS baseline.
 
 Python .py execution and Windows .exe compatibility are runtime/loader projects, not hardware drivers. The staged Win32 compatibility design is documented in [compat/winapi](compat/winapi/README.md); it is a specification, not an implemented API yet.
@@ -36,7 +37,7 @@ KolibriX is preparing a native development environment for **C, C++, and C#**, w
 - C# requires a managed runtime/IL execution layer as well as a compiler. A .cs source file or a Windows .NET executable cannot run natively until that runtime exists.
 - Starter source files and the implementation plan are in [kolibrix/devtools](devtools/README.md).
 
-These are development targets, not features already shipped in the 0.5 ISO.
+These are development targets, not features already shipped in the 0.5 ISO. The initial Code Studio entry launches the upstream KolibriOS CEdit editor with a KolibriX dark theme and C/C++/C# syntax profiles; see [devtools](devtools/README.md).
 
 ## Build
 
