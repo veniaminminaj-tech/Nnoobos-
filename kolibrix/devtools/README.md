@@ -4,7 +4,7 @@ KolibriX will provide a programming workspace for native applications. The first
 
 ## Current status
 
-This folder contains starter source examples, the language integration plan, and the KolibriX Code Studio configuration. The 0.5 ISO uses the existing upstream KolibriOS CEdit program as its initial code editor; this is not a newly written VS Code clone. The ISO does not yet bundle the C/C++ compilers or a C# runtime.
+This folder contains starter source examples, the language integration plan, and the KolibriX Code Studio configuration. The 1.0 ISO uses the existing upstream KolibriOS CEdit program as its initial code editor; this is not a newly written VS Code clone. The ISO does not yet bundle the C/C++ compilers or a C# runtime.
 
 | Language | Planned compiler/runtime | Target status |
 |---|---|---|
