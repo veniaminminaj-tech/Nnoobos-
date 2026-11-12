@@ -4,7 +4,7 @@
 
 KolibriX is one operating-system distribution: KolibriOS x86 is the low-level kernel and hardware/API foundation; KolibriX supplies the identity, boot configuration, desktop shell, system utilities, defaults, and later its own userland applications. The result must be presented as KolibriX, not as a separate KolibriOS session with a theme layered on top.
 
-KolibriX 0.5 desktop direction: a dark navy/blue hybrid interface. It combines a macOS-inspired top menu bar and dock, Windows 11-inspired taskbar and information cards, and iOS-inspired touch-friendly app tiles. These are visual inspirations, not copied operating-system assets. The current preview is a native shell, not yet a full window manager or persistent desktop environment. Target ISO size: at most 5 GiB.
+KolibriX 1.0 desktop direction: a dark navy/blue hybrid interface. It combines a macOS-inspired top menu bar and dock, Windows 11-inspired taskbar and information cards, and iOS-inspired touch-friendly app tiles. These are visual inspirations, not copied operating-system assets. The current preview is a native shell, not yet a full window manager or persistent desktop environment. Target ISO size: at most 5 GiB.
 
 ## Boot design
 
@@ -12,8 +12,7 @@ KolibriX 0.5 desktop direction: a dark navy/blue hybrid interface. It combines a
 - Selecting it boots the KolibriOS x86 core and starts the KolibriX system startup configuration.
 - No second GRUB entry for upstream KolibriOS or a release-information screen.
 - Release information belongs in documentation inside the ISO, not as another boot choice.
-- The early BIOS image currently packages the upstream KolibriOS floppy image using GRUB/MEMDISK. This is a bootstrapping mechanism, not the final integrated disk layout.
-- The next boot milestone is to make the KolibriX startup path and filesystem layout reproducible, then reduce reliance on a wrapped upstream floppy image where technically feasible.
+- KolibriX 1.0 patches the complete official KolibriOS LiveCD ISO and preserves its original El Torito boot path. The build does not wrap the full LiveCD inside a second MEMDISK ISO. The upstream bootloader and low-level boot chain remain inherited components.
 
 ## System ownership
 
@@ -118,8 +117,8 @@ Python is a separate engineering milestone:
 
 ## Milestones
 
-1. Reproducible KolibriOS-core boot foundation with one KolibriX GRUB entry.
-2. Native KolibriX desktop that starts automatically and handles real input.
+1. **1.0 baseline:** reproducible patched full LiveCD ISO, native KolibriX shell, startup configuration, and Code Studio configuration.
+2. Complete and visually validate the desktop event loop, window lifecycle, and app-launch behavior.
 3. Persistent desktop folders, file manager, and user settings.
 4. KolibriX-branded system utilities and applications.
 5. C and C++ cross-toolchain, SDK headers, native examples, and QEMU execution tests.
