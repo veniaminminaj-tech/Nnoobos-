@@ -428,7 +428,7 @@ align 4
 run_info dd 7,0,0,0,0,0
 path_files db '/SYS/FILE MANAGERS/EOLITE',0
 path_terminal db '/SYS/TERMINAL',0
-path_notepad db '/SYS/DEVELOP/CEDIT',0
+path_codestudio db '/SYS/DEVELOP/CEDIT',0
 path_settings db '/SYS/SETUP',0
 path_games db '/SYS/ALLGAMES',0
 label_brand db 'KolibriX',0
@@ -447,8 +447,8 @@ label_files_sub db 'Browse your system',0
 label_terminal_icon db '>_',0
 label_terminal db 'Terminal',0
 label_terminal_sub db 'Run commands',0
-label_notepad db 'Code Studio',0
-label_editor_sub db 'C / C++ / C# development',0
+label_codestudio db 'Code Studio',0
+label_codestudio_sub db 'C / C++ / C# development',0
 label_settings db 'Settings',0
 label_settings_sub db 'Configure KolibriX',0
 label_widget_title db 'Quick glance',0
@@ -460,12 +460,12 @@ label_system_line2 db 'Upstream drivers are used in this preview.',0
 label_start_short db 'K',0
 label_files_short db 'F',0
 label_terminal_short db 'T',0
-label_editor_short db '</>',0
+label_code_short db '</>',0
 label_settings_short db 'S',0
 label_menu_title db 'KOLIBRIX  /  APPS',0
 label_menu_files db 'File Manager',0
 label_menu_terminal db 'Terminal',0
-label_menu_notepad db 'Code Studio',0
+label_menu_codestudio db 'Code Studio',0
 label_menu_settings db 'System Settings',0
 label_menu_games db 'Games',0
 image_end:
