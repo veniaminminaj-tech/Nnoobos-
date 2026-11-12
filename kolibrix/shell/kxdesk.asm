@@ -376,7 +376,7 @@ button_event:
     cmp eax,11
     je run_terminal
     cmp eax,12
-    je run_notepad
+    je run_codestudio
     cmp eax,13
     je run_settings
     cmp eax,14
@@ -394,7 +394,7 @@ run_terminal:
     mov esi,path_terminal
     call launch_app
     jmp close_menu
-run_notepad:
+run_codestudio:
     mov esi,path_codestudio
     call launch_app
     jmp close_menu
