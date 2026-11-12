@@ -187,26 +187,82 @@ redraw:
     mov eax,13
     int 0x40
 
-    ; Dock background and app icons.
-    rect 244,screen_h_dummy,312,1,0x557796
-    rect 244,0,312,1,0x557796
-    rect 258,0,42,42,0x356B98
-    rect 312,0,42,42,0x245B6D
-    rect 366,0,42,42,0x70669B
-    rect 420,0,42,42,0x3E795F
-    rect 474,0,42,42,0x3D4E70
+    ; Dock background, anchored to the bottom edge.
+    movzx ecx,word [screen_h]
+    sub ecx,58
+    shl ecx,16
+    or ecx,58
+    mov ebx,244*65536+312
+    mov edx,0x263D59
+    mov eax,13
+    int 0x40
+    movzx ecx,word [screen_h]
+    sub ecx,58
+    shl ecx,16
+    or ecx,1
+    mov ebx,244*65536+312
+    mov edx,0x6686A8
+    mov eax,13
+    int 0x40
 
-    ; Dock icons and Start button are registered as click targets.
-    shortcut 1,258,0,42,42
-    shortcut 2,312,0,42,42
-    shortcut 3,366,0,42,42
-    shortcut 4,420,0,42,42
-    shortcut 5,474,0,42,42
-    ; Draw icons near the bottom edge using screen-relative coordinates.
+    ; Five touch-friendly dock targets, calculated from screen height.
+    movzx ecx,word [screen_h]
+    sub ecx,51
+    shl ecx,16
+    or ecx,42
+    mov ebx,258*65536+42
+    mov edx,0x20000001
+    xor esi,esi
+    mov eax,8
+    int 0x40
+    mov ebx,312*65536+42
+    mov edx,0x20000002
+    mov eax,8
+    int 0x40
+    mov ebx,366*65536+42
+    mov edx,0x20000003
+    mov eax,8
+    int 0x40
+    mov ebx,420*65536+42
+    mov edx,0x20000004
+    mov eax,8
+    int 0x40
+    mov ebx,474*65536+42
+    mov edx,0x20000005
+    mov eax,8
+    int 0x40
+
+    ; Draw dock icon backgrounds at the same screen-relative position.
+    movzx ecx,word [screen_h]
+    sub ecx,51
+    shl ecx,16
+    or ecx,42
+    mov ebx,258*65536+42
+    mov edx,0x356B98
+    mov eax,13
+    int 0x40
+    mov ebx,312*65536+42
+    mov edx,0x245B6D
+    mov eax,13
+    int 0x40
+    mov ebx,366*65536+42
+    mov edx,0x70669B
+    mov eax,13
+    int 0x40
+    mov ebx,420*65536+42
+    mov edx,0x3E795F
+    mov eax,13
+    int 0x40
+    mov ebx,474*65536+42
+    mov edx,0x3D4E70
+    mov eax,13
+    int 0x40
+
+    ; Short labels inside the dock icons.
     mov eax,4
     mov ebx,273*65536
     movzx edx,word [screen_h]
-    sub edx,31
+    sub edx,24
     or ebx,edx
     mov ecx,0x00FFFFFF
     mov edx,label_start_short
@@ -214,7 +270,7 @@ redraw:
     mov eax,4
     mov ebx,326*65536
     movzx edx,word [screen_h]
-    sub edx,31
+    sub edx,24
     or ebx,edx
     mov ecx,0x00FFFFFF
     mov edx,label_files_short
@@ -222,7 +278,7 @@ redraw:
     mov eax,4
     mov ebx,380*65536
     movzx edx,word [screen_h]
-    sub edx,31
+    sub edx,24
     or ebx,edx
     mov ecx,0x00FFFFFF
     mov edx,label_terminal_short
@@ -230,7 +286,7 @@ redraw:
     mov eax,4
     mov ebx,434*65536
     movzx edx,word [screen_h]
-    sub edx,31
+    sub edx,24
     or ebx,edx
     mov ecx,0x00FFFFFF
     mov edx,label_editor_short
@@ -238,7 +294,7 @@ redraw:
     mov eax,4
     mov ebx,488*65536
     movzx edx,word [screen_h]
-    sub edx,31
+    sub edx,24
     or ebx,edx
     mov ecx,0x00FFFFFF
     mov edx,label_settings_short
