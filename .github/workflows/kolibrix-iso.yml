@@ -23,7 +23,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fasm p7zip-full mtools grub-pc-bin grub-common xorriso syslinux-common qemu-system-x86 file
+          sudo apt-get install -y fasm p7zip-full mtools xorriso qemu-system-x86 file
 
       - name: Download and unpack the FULL official KolibriOS LiveCD
         run: |
@@ -67,6 +67,11 @@ jobs:
           printf 'KolibriX 1.0.0 — full LiveCD edition\r\nBased on the complete official KolibriOS LiveCD.\r\nKolibriX 1.0 provides the native KolibriX desktop shell, application launcher, Code Studio configuration, and a directly bootable patched LiveCD image.\r\nThe kernel and hardware drivers are inherited from upstream KolibriOS.\r\n' > build/KOLIBRIX.TXT
           mcopy -o -i build/kolibri.img build/KOLIBRIX.TXT ::KOLIBRIX.TXT
           mdir -i build/kolibri.img ::
+          mcopy -i build/kolibri.img ::KXDESK build/KXDESK.verify
+          cmp build/KXDESK build/KXDESK.verify
+          mcopy -i build/kolibri.img ::/SETTINGS/CEDIT.INI build/CEDIT.verify.INI
+          cmp kolibrix/config/CEDIT.INI build/CEDIT.verify.INI
+          grep -F '/SYS/KXDESK' build/AUTORUN.final.DAT
 
       - name: Patch the full LiveCD while preserving its original boot sector
         run: |
@@ -120,6 +125,8 @@ jobs:
             build/kolibrios-full-custom.iso
             build/KXHELLO.KEX
             build/KXDESK
+            build/CEDIT.verify.INI
+            build/KXDESK.verify
             build/upstream-archive.sha256
             build/upstream-boot-report.txt
             build/full-livecd-boot-report.txt
