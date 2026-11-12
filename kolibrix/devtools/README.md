@@ -4,7 +4,7 @@ KolibriX will provide a programming workspace for native applications. The first
 
 ## Current status
 
-This folder currently contains starter source examples and the integration plan. It does **not** yet contain bundled compilers, a C# runtime, or a working IDE. Do not advertise these languages as installed or executable in the 0.5 ISO.
+This folder contains starter source examples, the language integration plan, and the KolibriX Code Studio configuration. The 0.5 ISO uses the existing upstream KolibriOS CEdit program as its initial code editor; this is not a newly written VS Code clone. The ISO does not yet bundle the C/C++ compilers or a C# runtime.
 
 | Language | Planned compiler/runtime | Target status |
 |---|---|---|
@@ -36,6 +36,12 @@ The C# work is staged:
 4. Publish a compatibility matrix for supported C# language/runtime features.
 
 Until those tests pass, .cs files are source examples only. A Windows .exe produced by a normal .NET compiler is not automatically executable on KolibriX.
+
+## Code editor integration
+
+KolibriX launches the existing upstream KolibriOS CEdit application from the desktop under the KolibriX name **Code Studio**. Its configuration is stored at `kolibrix/config/CEDIT.INI` and is installed as `/SETTINGS/CEDIT.INI` by the ISO workflow. The configuration selects a dark editor theme and defines syntax rules for C, C++, C#, FASM, and the other upstream language profiles. CEdit supplies the actual editing, tabs, file handling, and editor features; the KolibriX integration supplies the desktop entry point and language configuration. Preserve the upstream CEdit license and attribution.
+
+The current integration does not add a VS Code-style project explorer, integrated terminal, extensions marketplace, IntelliSense/LSP, or debugger. Those remain future KolibriX development tasks.
 
 ## Source examples
 
