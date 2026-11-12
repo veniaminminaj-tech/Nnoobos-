@@ -4,7 +4,7 @@
 
 KolibriX is one operating-system distribution: KolibriOS x86 is the low-level kernel and hardware/API foundation; KolibriX supplies the identity, boot configuration, desktop shell, system utilities, defaults, and later its own userland applications. The result must be presented as KolibriX, not as a separate KolibriOS session with a theme layered on top.
 
-KolibriX 0.5 desktop direction: dark navy/blue interface with application cards, a taskbar, and a Start menu. The current preview is a native shell, not yet a full window manager or persistent desktop environment. Target ISO size: at most 5 GiB.
+KolibriX 0.5 desktop direction: a dark navy/blue hybrid interface. It combines a macOS-inspired top menu bar and dock, Windows 11-inspired taskbar and information cards, and iOS-inspired touch-friendly app tiles. These are visual inspirations, not copied operating-system assets. The current preview is a native shell, not yet a full window manager or persistent desktop environment. Target ISO size: at most 5 GiB.
 
 ## Boot design
 
