@@ -22,9 +22,21 @@ The 0.5 preview target is:
 - persistent desktop icon layout and KolibriX-owned file manager operations;
 - a native Python runtime;
 - a working PE32 loader and Win32 API compatibility implementation;
+- C/C++ development toolchain integrated into the ISO;
+- C# compiler/runtime integration;
 - guaranteed support for physical hardware beyond the upstream KolibriOS baseline.
 
-Python `.py` execution and Windows `.exe` compatibility are runtime/loader projects, not hardware drivers. The staged Win32 compatibility design is documented in [kolibrix/compat/winapi](compat/winapi/README.md); it is a specification, not an implemented API yet.
+Python .py execution and Windows .exe compatibility are runtime/loader projects, not hardware drivers. The staged Win32 compatibility design is documented in [compat/winapi](compat/winapi/README.md); it is a specification, not an implemented API yet.
+
+## Programming languages
+
+KolibriX is preparing a native development environment for **C, C++, and C#**, while FASM remains available for low-level system development.
+
+- C and C++ will use the established KolibriOS x86 SDK/toolchain as the starting point, with a reproducible compiler, linker, headers, and native executable output.
+- C# requires a managed runtime/IL execution layer as well as a compiler. A .cs source file or a Windows .NET executable cannot run natively until that runtime exists.
+- Starter source files and the implementation plan are in [kolibrix/devtools](devtools/README.md).
+
+These are development targets, not features already shipped in the 0.5 ISO.
 
 ## Build
 
