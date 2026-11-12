@@ -52,6 +52,7 @@ jobs:
           test -s build/KXDESK
           mcopy -o -i build/kolibri.img build/KXHELLO.KEX ::KXHELLO.KEX
           mcopy -o -i build/kolibri.img build/KXDESK ::KXDESK
+          mcopy -o -i build/kolibri.img kolibrix/config/CEDIT.INI ::/SETTINGS/CEDIT.INI
           mcopy -i build/kolibri.img ::/SETTINGS/AUTORUN.DAT build/AUTORUN.DAT
           sed -i -E 's#^(/SYS/@TASKBAR|/SYS/@ICON|/SYS/@DOCKY)([[:space:]]+)#\# Replaced by KolibriX: \1\2#' build/AUTORUN.DAT
           printf '\n/SYS/KXDESK "" 0 # Start KolibriX desktop\n' >> build/AUTORUN.DAT
